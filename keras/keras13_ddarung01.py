@@ -6,11 +6,19 @@ import pandas as pd # numpy로 이루어진 아주 강력한놈
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import r2_score, mean_squared_error
+from sklearn.metrics import r2_score, mean_squared_error, root_mean_squared_error
 
 
 #1. 데이터
-path = "./_data/ddarung/"
+path = "./_data/ddarung/" # 이렇게 사용하는걸 상대 경로라고함
+# path = "C:/study/_data/ddarung/" # 이렇게 하는결 절대 경로
+# path = "C://study//_data//ddarung/" # 이것도 가능
+# path = "C:\study\_data\ddarung/" # 역슬래시 가능
+# path = "C:\\study\\_data\\ddarung/" # 되..네?
+# path = "C:\\study/_data/ddarung/" # 이것도..?
+# 파이썬 기초 와.. 파이썬 장난 아니네? 별걸 다 허용해주네... 섞어서도 가능한데..
+
+
 # pandas에서 지원해주는 옵션이 강력함
 # index_col은 index로 걸려있는 칸을 입력해 줄 수 있다. 삭제 시킴
 # 이건 통 데이터 인데.. y가 제일 마지막에 있다 그래서 x, y분리 해야함
@@ -21,6 +29,7 @@ train_csv = pd.read_csv(path + "train.csv", index_col=0, )
 
 # test_csv에는 y값(카운트)가 존재하지 않음
 # 이건 submission을 추출하기 위한 데이터 predict를 하기위한 데이터
+# 진짜 시험에서 사용하는데이터라 훈련이다 평가에 사용할 수 없다
 test_csv = pd.read_csv(path + "test.csv", index_col=0)
 # print(test_csv) # [715 rows x 9 columns]
 
@@ -33,13 +42,13 @@ submission_csv = pd.read_csv(path + "submission.csv", index_col=0)
 # print(test_csv.shape) # (715, 9)
 # print(submission_csv.shape) # (715, 1)
 
-# print(train_csv.columns) # pandas에서 제공하는 columns
+# print(train_csv.columns) # pandas에서 제공하는 columns 컬럼들의 명칭이 나옴
 # Index(['hour', 'hour_bef_temperature', 'hour_bef_precipitation',
 #        'hour_bef_windspeed', 'hour_bef_humidity', 'hour_bef_visibility',
 #        'hour_bef_ozone', 'hour_bef_pm10', 'hour_bef_pm2.5', 'count'],
 #       dtype='str')
 
-# print(train_csv.info()) # pandas에서 제공하는 info
+# print(train_csv.info()) # pandas에서 제공하는 info 데이터확인 가능
 # Non-Null Count 컬럼은 결측치를 제외한 카운트
 #  #   Column                  Non-Null Count  Dtype  
 # ---  ------                  --------------  -----  
@@ -59,8 +68,15 @@ submission_csv = pd.read_csv(path + "submission.csv", index_col=0)
 train_csv = train_csv.dropna() # 판다스에서 제공하는거로 결측치가 있는 로우 자체를 삭제시켜 버림 마지막 na는 non을 제거하는거
 print(train_csv.shape) # (1328, 10)
 # test_csv = test_csv.dropna() # test도 결측치가 있지만 삭제시키면 안되기 때문에 다음시간에..
+# 무조건 삭제하는게 아니라 살릴 수 있는 데이터는 살려야한다
 
 # exit() # 중간에 종료시키는 명령어
+
+
+########################## 결측치 처리 2. 삭제 ###########################
+
+
+
 
 
 ########################## csv를 x와 y로 분리 ##########################
@@ -93,6 +109,9 @@ print("loss :", loss)
 
 y_predict = model.predict(x_test)
 
+r2 = r2_score(y_test, y_predict)
+print("r2 :", r2)
+
 mse = mean_squared_error(y_test, y_predict)
 print("mse :", mse)
 
@@ -102,8 +121,11 @@ def RMSE(mse) :
 rmse = RMSE(mse)
 print("rmse :", rmse)
 
+rmse2 = root_mean_squared_error(y_test, y_predict) # 지원해주는 rmse 사용해보기
+print("rmse2 :", rmse2)
 
 # mse : 2531.932488962467
 # rmse : 50.318311666454655
 
 # rmse값 29.31283 이하 이어야 1등인데.. 32점이면 100등 안으로..
+
