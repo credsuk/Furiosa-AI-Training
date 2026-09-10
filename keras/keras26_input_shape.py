@@ -1,3 +1,4 @@
+# keras23_softmax1_OneHot_iris 복사
 import numpy as np
 import pandas as pd
 import time
@@ -12,50 +13,10 @@ from sklearn.metrics import accuracy_score
 
 #1. 데이터
 datasets = load_iris()
-# print(datasets)
-# print(datasets.DESCR)
-"""
-:Number of Instances: 150 (50 in each of three classes)
-:Number of Attributes: 4 numeric, predictive attributes and the class
-:Attribute Information:
-    - sepal length in cm
-    - sepal width in cm
-    - petal length in cm
-    - petal width in cm
-    - class:
-            - Iris-Setosa
-            - Iris-Versicolour
-            - Iris-Virginica
-
----------------------------------------------------
-150개의 행
-4개의 컬럼
-행의 정보
-
----------------------------------------------------
-
-
-============== ==== ==== ======= ===== ====================
-                Min  Max   Mean    SD   Class Correlation
-============== ==== ==== ======= ===== ====================
-sepal length:   4.3  7.9   5.84   0.83    0.7826
-sepal width:    2.0  4.4   3.05   0.43   -0.4194
-petal length:   1.0  6.9   3.76   1.76    0.9490  (high!)
-petal width:    0.1  2.5   1.20   0.76    0.9565  (high!)
-
-------------------------------------------------
-최소, 최대, 평균, 표준편차, 상관관계
-Correlation = 상관관계가 강해서 같이 값이 움직인다는 뜻, 하지만 좋다 나쁘다 할 수 없다
-"""
-
-
 
 x = datasets.data
 y = datasets.target
-# print(x.shape, y.shape) # (150, 4) (150,)
-# print(np.unique(y, return_counts=True)) # (array([0, 1, 2]), array([50, 50, 50]))
 # print(pd.DataFrame(y).value_counts()) # 이코드만 봐도 분류구나 생각하면됨 더 많이 쓰인다
-
 """
 [0,0,1,1,2,2] 이렇게 되어있는 (6,)
 y 데이터를 이렇게 수정해야함
@@ -73,26 +34,12 @@ y 데이터를 이렇게 수정해야함
 모든값을 더했을때 1 이상을 넘지 않음
 """
 
-############# OneHot1. kensorflow to_categorical #############
-# from tensorflow.keras.utils import to_categorical
-# y = to_categorical(y) # 카테고리 화 시키는 함수로 panda에도 있다 우선은 이거
-# print(y.shape) # (150, 3)
-# to_categorical를 사용하면 앞에 0이 생긴다 훈련에는 상관없다 
-
-############# OneHot2. pandas get_dummies #############
-# y = pd.get_dummies(y, dtype=int)
-# print(y.shape) # (150, 3)
-
 ############# OneHot3. sklearn fit_transform #############
 from sklearn.preprocessing import OneHotEncoder
-# sparse_output 값은 기본값은 희소 행렬(Sparse matrix)이지만, False로 설정하면 0과 1이 채워진 일반적인 2차원 넘파이 배열(ndarray)을 출력합니다
 ohe = OneHotEncoder(sparse_output=False)
-# print(y.shape) # (150, )
 
 y = y.reshape(-1,1) # 2차원 배열로 만들어 줘야함
-# print(y.shape) # (150, 1)
 y = ohe.fit_transform(y)
-# print(y.shape) # (150, 3)
 
 
 x_train, x_test, y_train, y_test = train_test_split(
@@ -101,18 +48,22 @@ x_train, x_test, y_train, y_test = train_test_split(
     random_state=532,
     stratify=y, # y는 어떤 데이터를 대상인지를 사용함 Yes가 아님
 )
-# print(x_train.shape, x_test.shape) # (120, 4) (30, 4)
-# print(y_train.shape, y_test.shape) # (120, 3) (30, 3)
 
 
 #2. 모델 구축
 model = Sequential()
-model.add(Dense(7, input_dim=4, activation='relu'))
+model.add(Dense(7, input_shape=(4, ),  activation='relu')) # input_shape는 shape형태로 넣어야함
 model.add(Dense(11, activation='relu'))
 model.add(Dense(23, activation='relu'))
 model.add(Dense(13, activation='relu')) # relu는 활성화 함수
 model.add(Dense(3, activation='softmax')) # softmax 모두 더해서 엔빵해라 절대 1일 넘지 않고 제일 큰놈을 1로주고 나머지 0
 
+"""
+원데이터 > input_shape
+(n, 4) -> (4, )
+(n, 100, 3) -> (100, 3)
+(n, 1000, 100, 3) -> (1000, 100, 3)
+"""
 
 #3. 컴파일, 훈련
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc']) # categorical 범주, # crossentropy > 통상적으로 이거 아니면 이거 이런 형태
@@ -142,16 +93,18 @@ print("loss : ", result[0])
 print("acc : ", round(result[1], 2))
 
 y_predict = model.predict(x_test) # predict 예측 또는 추론
-# print(np.unique(y_predict, return_counts=True))
 
 # 가장높은 값을 1로 처리하는게 필요
 y_predict = np.argmax(y_predict, axis=1)
-print(y_predict)  # [0 1 1 0 2 1 1 1 1 1 0 2 0 2 2 1 0 1 0 2 2 1 0 2 1 0 1 0 0 1]
 y_test = np.argmax(y_test, axis=1)
-print(y_test)     # [0 1 1 0 2 2 2 1 1 1 0 2 0 2 2 1 0 2 0 2 2 1 0 2 1 0 1 0 0 1]
 
 acc_score = accuracy_score(y_test, y_predict)
 print("accuracy_score : ", np.round(acc_score, 2))
 print("걸린시간 : ", round(end_time - start_time, 2), "초")
 
+
+# loss :  0.08837046474218369
+# acc :  0.93
+# accuracy_score :  0.93
+# 걸린시간 :  6.68 초
 

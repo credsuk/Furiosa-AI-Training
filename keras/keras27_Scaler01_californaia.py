@@ -1,6 +1,6 @@
 
 """
-keras17_val1_califonia.py 복사 해옴
+keras19_overfit1_califonia.py 복사 해옴
 
 """
 from sklearn.datasets import fetch_california_housing
@@ -15,14 +15,35 @@ datasets = fetch_california_housing()
 x = datasets.data
 y = datasets.target
 
-print("shape ::", x.shape, y.shape) # (20640, 8) (20640,)
 
+# 스케일링을 한다
+"""
+MinMaxScaler
+
+원값 - Min
+--------------
+Max - Min
+"""
+from sklearn.preprocessing import MinMaxScaler
+scaler = MinMaxScaler()
+scaler.fit(x) # 카이킥 런에서 # 핏은 실행하다 라는 뜻 아직 실행한거 아님 준비 까지
+x = scaler.transform(x) # transform은 이걸 실행하는거
+# print(x);
+print(np.min(x), np.max(x)) # 0.0 1.0000000000000002 < 1이 넘어가는건 파이썬자체의 오류이다
+
+
+# a = 0.1
+# b = 0.2
+# print(a+b) # 0.30000000000000004
+# 컴퓨터인지 알아내는 방법...? 부동소수점 계산이라 이런 오차가 있다
+
+print("shape ::", x.shape, y.shape) # (20640, 8) (20640,)
 x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=253)
 
 
 #2. 모델구성
 model = Sequential()
-model.add(Dense(4, activation='relu', input_dim=8))
+model.add(Dense(4, activation='relu', input_shape=(8,)))
 model.add(Dense(7, activation='relu'))
 model.add(Dense(7, activation='relu'))
 model.add(Dense(10, activation='relu'))
@@ -40,25 +61,8 @@ print("========================================================")
 print("훈련에 걸린시간 : ", round(end_time - start_time, 2), "초")
 print("loss : ", loss)
 
-print("========================= hist ===============================")
-print(hist)
-print("========================= hist.history ===============================")
-print(hist.history)
-"""
-{
-    'loss': [65.28096771240234, 2.453090190887451, 1.1672496795654297, 0.8666049242019653, 0.7593405246734619, 0.7224177122116089, 0.6885923147201538, 0.6621494293212891, 0.6426905989646912, 0.6626430749893188], 
-    'val_loss': [2.7848868370056152, 1.370016098022461, 0.9148955345153809, 0.8258680105209351, 0.6656901240348816, 0.6903218030929565, 0.6282101273536682, 0.8736544847488403, 0.564456582069397, 0.619134247303009]
-}
-"""
-# 두개 이상은 List
-# 키 : 밸류는 Dictionary
-print("========================= loss ===============================")
 hist_loss = hist.history['loss']
-# print(hist_loss)
-print("========================= val_loss ===============================")
 hist_val_loss = hist.history['val_loss']
-# print(hist_val_loss)
-print("========================================================")
 
 
 import matplotlib.pyplot as plt # 그림을 그려주는 플러그인
@@ -80,5 +84,5 @@ plt.ylabel('loss') # y축의 이름
 plt.grid() # 모눈종이 형태로 보여준다
 # plt.show() # 표시
 
-# 훈련에 걸린시간 :  194.04 초
-# loss :  0.4594744145870209
+# 훈련에 걸린시간 :  198.05 초
+# loss :  0.326321005821228

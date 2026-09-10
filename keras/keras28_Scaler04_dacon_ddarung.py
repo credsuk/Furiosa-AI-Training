@@ -1,5 +1,5 @@
 """
-keras19_overfit4_dacon_ddarung.py 데이터 복사
+keras20_EarlyStopping4_dacon_ddarung.py 데이터 복사
 
 """
 
@@ -10,6 +10,7 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, mean_squared_error, root_mean_squared_error
+from sklearn.preprocessing import MinMaxScaler
 
 
 #1. 데이터
@@ -34,6 +35,12 @@ x = train_csv.drop(['count'], axis=1) # axis=축 행=0, 열=1 => count란 열을
 y = train_csv['count'] # count 컬럼만 빼겠다 이것도 판다스에서 하는..듯?
 
 x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=68)
+
+scaler = MinMaxScaler()
+scaler.fit(x_train)
+x_train = scaler.transform(x_train)
+x_test = scaler.transform(x_test)
+
 
 
 ########################## submit 물밑 작업 ###########################
@@ -115,11 +122,22 @@ plt.grid()
 
 
 """
+이전 값
 Epoch 6859/50000
 loss : 6292.8388671875
 r2 : -0.008917648046987248
 mse : 6292.838932013853
 rmse : 79.32741601750213
 rmse2 : 79.32741601750213
+"""
+
+"""
+이후 값
+Epoch 6972/50000
+loss : 6294.53857421875
+r2 : -0.00919003674360197
+mse : 6294.537879591999
+rmse : 79.33812374635538
+rmse2 : 79.33812374635538
 
 """

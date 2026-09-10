@@ -1,4 +1,4 @@
-# https://www.kaggle.com/competitions/santander-customer-transaction-prediction/data
+# keras22_sigmoid_santander.py 복사
 
 import numpy as np
 import pandas as pd
@@ -8,6 +8,7 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import MinMaxScaler
 
 #1. 데이터
 path = "c:/study/_data/kaggle_santander/"
@@ -28,6 +29,12 @@ y = train_csv["target"]
 # print(np.unique(y, return_counts=True)) # (array([0, 1]), array([179902,  20098]))
 
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=234, stratify=y)
+
+
+scaler = MinMaxScaler()
+scaler.fit(x_train)
+x_train = scaler.transform(x_train)
+x_test = scaler.transform(x_test)
 
 
 #2. 모델구성

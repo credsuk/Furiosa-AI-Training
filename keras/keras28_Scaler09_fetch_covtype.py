@@ -1,3 +1,5 @@
+# keras23_softmax3_fetch_covtype.py 복사
+
 from sklearn.datasets import fetch_covtype
 from sklearn.model_selection import train_test_split
 
@@ -5,6 +7,8 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import MinMaxScaler
+
 
 import numpy as np
 import pandas as pd
@@ -33,6 +37,12 @@ x_train, x_test, y_train, y_test = train_test_split(
     random_state=51221,
     stratify=y,
 )
+
+
+scaler = MinMaxScaler()
+scaler.fit(x_train)
+x_train = scaler.transform(x_train)
+x_test = scaler.transform(x_test)
 
 
 

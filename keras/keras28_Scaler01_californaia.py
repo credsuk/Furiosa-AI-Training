@@ -1,12 +1,14 @@
 
 """
-keras17_val1_califonia.py 복사 해옴
+keras27_Scaler01_californaia.py 복사 해옴
 
 """
 from sklearn.datasets import fetch_california_housing
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
+from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.model_selection import train_test_split
+
 import numpy as np
 import time
 
@@ -15,14 +17,36 @@ datasets = fetch_california_housing()
 x = datasets.data
 y = datasets.target
 
-print("shape ::", x.shape, y.shape) # (20640, 8) (20640,)
 
+# 스케일링을 한다
+"""
+MinMaxScaler
+
+원값 - Min
+--------------
+Max - Min
+"""
+
+
+print("shape ::", x.shape, y.shape) # (20640, 8) (20640,)
 x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=253)
+
+from sklearn.preprocessing import MinMaxScaler
+scaler = MinMaxScaler()
+scaler.fit(x_train) # 여기선 비율이 정해지고
+x_train = scaler.transform(x_train) # 여기서 실제 변환을 한다
+x_test = scaler.transform(x_test) # 같은 비율로 테스트 데이터를 변환한다
+
+print(np.min(x_train), np.max(x_train)) # 0.0 1.0000000000000004
+print(np.min(x_test), np.max(x_test)) # -0.001071811361200048 2.313783684968923
+
+# 기준에 x_train이고 같은 비율로 x_test를 해야 과적합되지 않는다
+# x데이터 전체를 하면 x_test의 데이터의 데이터를 확정할 수 없다
 
 
 #2. 모델구성
 model = Sequential()
-model.add(Dense(4, activation='relu', input_dim=8))
+model.add(Dense(4, activation='relu', input_shape=(8,)))
 model.add(Dense(7, activation='relu'))
 model.add(Dense(7, activation='relu'))
 model.add(Dense(10, activation='relu'))
@@ -30,8 +54,16 @@ model.add(Dense(1))
 
 #3. 컴파일, 훈련
 model.compile(loss='mse', optimizer='adam')
+
+es = EarlyStopping(
+    monitor='val_loss',
+    mode='min',
+    patience=50,
+    restore_best_weights=True
+)
+
 start_time = time.time()
-hist = model.fit(x_train, y_train, epochs=500, batch_size=32, validation_split=0.2)
+hist = model.fit(x_train, y_train, epochs=500, batch_size=32, validation_split=0.2, callbacks=[es],)
 end_time = time.time()
 
 #4. 평가 예측
@@ -40,26 +72,10 @@ print("========================================================")
 print("훈련에 걸린시간 : ", round(end_time - start_time, 2), "초")
 print("loss : ", loss)
 
-print("========================= hist ===============================")
-print(hist)
-print("========================= hist.history ===============================")
-print(hist.history)
-"""
-{
-    'loss': [65.28096771240234, 2.453090190887451, 1.1672496795654297, 0.8666049242019653, 0.7593405246734619, 0.7224177122116089, 0.6885923147201538, 0.6621494293212891, 0.6426905989646912, 0.6626430749893188], 
-    'val_loss': [2.7848868370056152, 1.370016098022461, 0.9148955345153809, 0.8258680105209351, 0.6656901240348816, 0.6903218030929565, 0.6282101273536682, 0.8736544847488403, 0.564456582069397, 0.619134247303009]
-}
-"""
-# 두개 이상은 List
-# 키 : 밸류는 Dictionary
-print("========================= loss ===============================")
 hist_loss = hist.history['loss']
-# print(hist_loss)
-print("========================= val_loss ===============================")
 hist_val_loss = hist.history['val_loss']
-# print(hist_val_loss)
-print("========================================================")
-
+# print("loss :", hist_loss)
+# print("val_loss :", hist_val_loss)
 
 import matplotlib.pyplot as plt # 그림을 그려주는 플러그인
 
@@ -80,5 +96,6 @@ plt.ylabel('loss') # y축의 이름
 plt.grid() # 모눈종이 형태로 보여준다
 # plt.show() # 표시
 
-# 훈련에 걸린시간 :  194.04 초
-# loss :  0.4594744145870209
+
+# 훈련에 걸린시간 :  171.99 초
+# loss :  0.3200035095214844
