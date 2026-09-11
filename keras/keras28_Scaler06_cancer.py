@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import root_mean_squared_error
 from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.datasets import load_breast_cancer # load_breast_cancer 유방암관련 데이터셋 / 분류형 데이터 
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler, RobustScaler
 
 #1. 데이터
 datasets = load_breast_cancer()
@@ -24,7 +24,11 @@ x_train, x_test, y_train, y_test = train_test_split(
     stratify=y, # y데이터를 stratify해라 골고루 나오게 해라
 )
 
-scaler = MinMaxScaler()
+# scaler = MinMaxScaler()
+# scaler = StandardScaler()
+# scaler = MaxAbsScaler()
+scaler = RobustScaler()
+
 scaler.fit(x_train)
 x_train = scaler.transform(x_train)
 x_test = scaler.transform(x_test)
@@ -51,7 +55,7 @@ model.compile(loss='binary_crossentropy', optimizer='adam',
 es = EarlyStopping(
     monitor="val_acc",
     mode="max",
-    patience=200,
+    patience=500,
     restore_best_weights=True
 )
 
@@ -67,6 +71,7 @@ end_time = time.time()
 
 
 #4. 평가, 예측
+print("================= keras28_Scaler06_cancer =================")
 loss = model.evaluate(x_test, y_test)
 
 y_pred = model.predict(x_test)
@@ -98,6 +103,31 @@ acc_score : 0.9181
 """
 
 """
-이후 값
-
+이후 값 MinMaxScaler
+Epoch 224/10000
+훈련에 걸린시간 : 14.05 초
+loss : 0.159442737698555
+acc : 0.9357
+acc_score : 0.9357
 """
+
+# StandardScaler
+# Epoch 515/10000
+# 훈련에 걸린시간 : 32.88 초
+# loss : 0.14123688638210297
+# acc : 0.9474
+# acc_score : 0.9474
+
+
+# MaxAbsScaler
+# 훈련에 걸린시간 : 40.62 초
+# loss : 0.1220901682972908
+# acc : 0.9474
+# acc_score : 0.9474
+
+
+# RobustScaler
+# 훈련에 걸린시간 : 35.97 초
+# loss : 0.1436488777399063
+# acc : 0.9415
+# acc_score : 0.9415

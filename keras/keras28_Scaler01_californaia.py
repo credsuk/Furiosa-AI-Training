@@ -31,11 +31,17 @@ Max - Min
 print("shape ::", x.shape, y.shape) # (20640, 8) (20640,)
 x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=253)
 
-from sklearn.preprocessing import MinMaxScaler
-scaler = MinMaxScaler()
-scaler.fit(x_train) # 여기선 비율이 정해지고
-x_train = scaler.transform(x_train) # 여기서 실제 변환을 한다
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler, RobustScaler
+# scaler = MinMaxScaler()
+# scaler = StandardScaler()
+# scaler = MaxAbsScaler()
+scaler = RobustScaler()
+
+# scaler.fit(x_train) # 여기선 비율이 정해지고
+# x_train = scaler.transform(x_train) # 여기서 실제 변환을 한다
+x_train = scaler.fit_transform(x_train) # 이렇게도 사용가능
 x_test = scaler.transform(x_test) # 같은 비율로 테스트 데이터를 변환한다
+
 
 print(np.min(x_train), np.max(x_train)) # 0.0 1.0000000000000004
 print(np.min(x_test), np.max(x_test)) # -0.001071811361200048 2.313783684968923
@@ -67,10 +73,12 @@ hist = model.fit(x_train, y_train, epochs=500, batch_size=32, validation_split=0
 end_time = time.time()
 
 #4. 평가 예측
+print("================= keras28_Scaler01_californaia ================")
+
 loss = model.evaluate(x_test, y_test)
-print("========================================================")
-print("훈련에 걸린시간 : ", round(end_time - start_time, 2), "초")
+print("훈련에 걸린시간 :", round(end_time - start_time, 2), "초")
 print("loss : ", loss)
+
 
 hist_loss = hist.history['loss']
 hist_val_loss = hist.history['val_loss']
@@ -97,5 +105,21 @@ plt.grid() # 모눈종이 형태로 보여준다
 # plt.show() # 표시
 
 
+# MinMaxScaler
 # 훈련에 걸린시간 :  171.99 초
 # loss :  0.3200035095214844
+
+
+# StandardScaler
+# 훈련에 걸린시간 :  189.64 초
+# loss :  0.2890736758708954
+
+
+# MaxAbsScaler
+# 훈련에 걸린시간 : 326.86 초
+# loss :  0.3972775936126709
+
+
+# RobustScaler
+# 훈련에 걸린시간 : 115.06 초
+# loss :  0.3276841938495636

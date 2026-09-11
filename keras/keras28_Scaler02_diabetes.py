@@ -7,7 +7,7 @@ from tensorflow.keras.layers import Dense
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score 
 from tensorflow.keras.callbacks import EarlyStopping
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler, RobustScaler
 import numpy as np
 import time
 
@@ -18,7 +18,11 @@ y = dataset.target
 
 x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=34)
 
-scaler = MinMaxScaler()
+# scaler = MinMaxScaler()
+# scaler = StandardScaler()
+# scaler = MaxAbsScaler()
+scaler = RobustScaler()
+
 scaler.fit(x_train)
 x_train = scaler.transform(x_train)
 x_test = scaler.transform(x_test)
@@ -47,6 +51,8 @@ es = EarlyStopping(
     patience = 1500,
     restore_best_weights=True,
 )
+
+start_time = time.time()
 hist = model.fit(x_train, y_train, 
                  epochs=10000, 
                  batch_size=75, 
@@ -54,7 +60,11 @@ hist = model.fit(x_train, y_train,
                  callbacks=[es],
                 )
 
+end_time = time.time()
+
 #4. 평가 예측
+print("================= keras28_Scaler02_diabetes ================")
+print("훈련시간 : ", round(end_time - start_time, 2), "초")
 loss = model.evaluate(x_test, y_test)
 print("loss : ", loss)
 
@@ -83,16 +93,31 @@ plt.grid()
 
 
 """
-이전 값
+
 Epoch 1754/10000
 loss :  3194.597900390625
 r2 : 0.3773081007759006
 """
 
 """
-이후 값
+MinMaxScaler
 Epoch 1911/10000
 loss :  3107.7021484375
 r2 : 0.3942459105548386
 """
 
+# StandardScaler
+# Epoch 4234/10000
+# loss :  2982.715576171875
+# r2 : 0.4186083004632528
+
+
+# MaxAbsScaler
+# loss :  3008.32666015625
+# r2 : 0.41361619613924705
+
+
+# RobustScaler
+# 훈련시간 :  365.96 초
+# loss :  2998.767333984375
+# r2 : 0.415479451342582

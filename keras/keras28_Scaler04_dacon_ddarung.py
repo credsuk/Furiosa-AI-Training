@@ -5,12 +5,13 @@ keras20_EarlyStopping4_dacon_ddarung.py 데이터 복사
 
 import numpy as np # 숫자 쪽에서 아주 강력한 놈
 import pandas as pd # numpy로 이루어진 아주 강력한놈
+import time
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, mean_squared_error, root_mean_squared_error
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler, RobustScaler
 
 
 #1. 데이터
@@ -36,7 +37,11 @@ y = train_csv['count'] # count 컬럼만 빼겠다 이것도 판다스에서 하
 
 x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=68)
 
-scaler = MinMaxScaler()
+# scaler = MinMaxScaler()
+# scaler = MaxAbsScaler()
+# scaler = StandardScaler()
+scaler = RobustScaler()
+
 scaler.fit(x_train)
 x_train = scaler.transform(x_train)
 x_test = scaler.transform(x_test)
@@ -71,15 +76,18 @@ es = EarlyStopping(
     restore_best_weights = True,
 )
 
+start_time = time.time()
 hist = model.fit(x_train, y_train, 
                  epochs = 50000, 
                  batch_size = 36, 
                  validation_split = 0.2,
                  callbacks = [es]
                 )
-
+end_time = time.time()
 
 #4. 평가 예측
+print("================= keras28_Scaler04_dacon_ddarung ================")
+print("훈련 시간 :", round(end_time - start_time, 2), "초")
 loss = model.evaluate(x_test, y_test)
 print("loss :", loss)
 
@@ -132,7 +140,7 @@ rmse2 : 79.32741601750213
 """
 
 """
-이후 값
+이후 값 MinMaxScaler
 Epoch 6972/50000
 loss : 6294.53857421875
 r2 : -0.00919003674360197
@@ -141,3 +149,29 @@ rmse : 79.33812374635538
 rmse2 : 79.33812374635538
 
 """
+
+# StandardScaler
+# Epoch 240/50000
+# loss : 2465.07763671875
+# r2 : 0.6047792862340702
+# mse : 2465.077599880302
+# rmse : 49.64954783157951
+# rmse2 : 49.64954783157951
+
+
+# MaxAbsScaler
+# 훈련 시간 : 10.0 초
+# loss : 2452.15185546875
+# r2 : 0.6068516396855697
+# mse : 2452.151880416743
+# rmse : 49.51920718687591
+# rmse2 : 49.51920718687591
+
+
+# RobustScaler
+# 훈련 시간 : 19.17 초
+# loss : 2369.961181640625
+# r2 : 0.6200291266309885
+# mse : 2369.961026647106
+# rmse : 48.682245497173874
+# rmse2 : 48.682245497173874

@@ -4,12 +4,13 @@ keras20_EarlyStopping5_kaggle_bike.py 복사
 
 import numpy as np
 import pandas as pd
+import time
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, mean_squared_error
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler, RobustScaler
 
 
 #1. 데이터
@@ -25,7 +26,11 @@ y = train_csv['count']
 
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=5437089)
 
-scaler = MinMaxScaler()
+# scaler = MinMaxScaler()
+# scaler = StandardScaler()
+# scaler = MaxAbsScaler()
+scaler = RobustScaler()
+
 scaler.fit(x_train)
 x_train = scaler.transform(x_train)
 x_test = scaler.transform(x_test)
@@ -50,15 +55,19 @@ es = EarlyStopping(
     patience = 1000,
     restore_best_weights = True,
 )
+
+start_time = time.time()
 hist = model.fit(x_train, y_train, 
                  epochs = 30000, 
                  batch_size = 32, 
                  validation_split = 0.2,
                  callbacks = [es]
                 )
-
+end_time = time.time()
 
 #4. 평가 예측
+print("================= keras28_Scaler05_kaggle_bike =================")
+print("훈련 시간 :", round(end_time - start_time, 2), "초")
 loss = model.evaluate(x_test, y_test)
 print("loss :", loss)
 
@@ -101,6 +110,29 @@ rmse : 150.88454039844507
 """
 
 """
-이후 값
-
+이후 값 MinMaxScaler
+Epoch 9868/30000
+loss : 21592.708984375
+r2 : 0.3341073989868164
+rmse : 146.94458458037846
 """
+
+# StandardScaler
+# Epoch 7516/30000
+# loss : 22624.57421875
+# r2 : 0.30228596925735474
+# rmse : 150.414680705957
+
+
+# MaxAbsScaler
+# 훈련 시간 : 424.4 초
+# loss : 23305.384765625
+# r2 : 0.28129082918167114
+# rmse : 152.66099340122872
+
+
+# RobustScaler
+# 훈련 시간 : 331.57 초
+# loss : 22885.068359375
+# r2 : 0.2942526936531067
+# rmse : 151.278115930147

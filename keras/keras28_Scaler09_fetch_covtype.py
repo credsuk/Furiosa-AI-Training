@@ -7,7 +7,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.metrics import accuracy_score
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler, RobustScaler
 
 
 import numpy as np
@@ -34,12 +34,16 @@ print(x.shape, y.shape) # (581012, 54) (581012, 7)
 x_train, x_test, y_train, y_test = train_test_split(
     x, y,
     test_size=0.25,
-    random_state=51221,
+    random_state=513,
     stratify=y,
 )
 
 
-scaler = MinMaxScaler()
+# scaler = MinMaxScaler()
+# scaler = StandardScaler()
+# scaler = MaxAbsScaler()
+scaler = RobustScaler()
+
 scaler.fit(x_train)
 x_train = scaler.transform(x_train)
 x_test = scaler.transform(x_test)
@@ -48,7 +52,7 @@ x_test = scaler.transform(x_test)
 
 #2. 모델구성
 model = Sequential()
-model.add(Dense(62, input_dim=54, activation='relu'))
+model.add(Dense(73, input_dim=54, activation='relu'))
 model.add(Dense(84, activation='relu'))
 model.add(Dense(72, activation='relu'))
 model.add(Dense(45, activation='relu'))
@@ -83,6 +87,8 @@ end_time = time.time()
 
 
 #4. 평가 예측
+print("================= keras28_Scaler09_fetch_covtype =================")
+
 result = model.evaluate(x_test, y_test)
 print("loss :", result[0])
 print("acc :", result[1])
@@ -103,3 +109,34 @@ print("걸린시간 :", round(end_time - start_time, 2), "초")
 # acc : 0.8916993141174316
 # acc_score :  0.8916993108576071
 # 걸린시간 : 427.43 초
+
+
+"""
+MinMaxScaler
+loss : 0.2871609330177307
+acc : 0.8854825496673584
+acc_score :  0.8854825717885345
+걸린시간 : 371.91 초
+"""
+
+
+# StandardScaler
+# loss : 0.18026182055473328
+# acc : 0.9324695467948914
+# acc_score :  0.9324695531245482
+# 걸린시간 : 259.58 초
+
+
+
+# MaxAbsScaler
+# loss : 0.24471095204353333
+# acc : 0.9050966501235962
+# acc_score :  0.9050966245103371
+# 걸린시간 : 353.14 초
+
+
+# RobustScaler
+# loss : 0.19473013281822205
+# acc : 0.9255024194717407
+# acc_score :  0.9255023992619774
+# 걸린시간 : 286.49 초

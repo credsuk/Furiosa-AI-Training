@@ -8,7 +8,7 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler, RobustScaler
 
 #1. 데이터
 path = "c:/study/_data/kaggle_santander/"
@@ -28,10 +28,14 @@ y = train_csv["target"]
 # print(x.shape, y.shape) # (200000, 200) (200000,)
 # print(np.unique(y, return_counts=True)) # (array([0, 1]), array([179902,  20098]))
 
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=234, stratify=y)
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=5221, stratify=y)
 
 
-scaler = MinMaxScaler()
+# scaler = MinMaxScaler()
+# scaler = StandardScaler()
+# scaler = RobustScaler()
+scaler = MaxAbsScaler()
+
 scaler.fit(x_train)
 x_train = scaler.transform(x_train)
 x_test = scaler.transform(x_test)
@@ -39,11 +43,11 @@ x_test = scaler.transform(x_test)
 
 #2. 모델구성
 model = Sequential();
-model.add(Dense(5, input_dim=200, activation="relu"))
-model.add(Dense(17, activation="relu"))
-model.add(Dense(32, activation="relu"))
-model.add(Dense(19, activation="relu"))
-model.add(Dense(6, activation="relu"))
+model.add(Dense(150, input_dim=200, activation="relu"))
+model.add(Dense(250, activation="relu"))
+model.add(Dense(100, activation="relu"))
+model.add(Dense(50, activation="relu"))
+model.add(Dense(28, activation="relu"))
 model.add(Dense(1, activation="sigmoid"))
 
 
@@ -67,7 +71,8 @@ hist = model.fit(x_train, y_train,
 end_time = time.time()
 
 
-#3 평가 예측
+#4. 평가 예측
+print("================= keras28_Scaler07_santander =================")
 loss = model.evaluate(x_test, y_test)
 y_pred = model.predict(test_csv)
 y_pred = np.round(y_pred)
@@ -88,8 +93,38 @@ print(np.unique(y_pred, return_counts=True))
 submission.to_csv(path + "submit/submission_0908_1730.csv")
 
 """
+MinMaxScaler
 훈련에 걸린 시간 :  51.3484 초
 loss : 0.24008747935295105
 acc :  0.9125000238418579
 acc_score :  0.878105
 """
+
+
+# StandardScaler
+# 훈련에 걸린 시간 :  69.1463 초
+# loss : 0.24888037145137787
+# acc :  0.9038500189781189
+# acc_score :  0.89951
+
+
+# Epoch 201/512412512
+# 훈련에 걸린 시간 :  159.395 초
+# loss : 0.2450656294822693
+# acc :  0.9090999960899353
+# acc_score :  0.89951
+
+# 훈련에 걸린 시간 :  150.4871 초
+# loss : 0.2454412579536438
+# acc :  0.9100000262260437
+# acc_score :  0.89951
+
+
+# MaxAbsScaler
+# 훈련에 걸린 시간 :  156.2377 초
+# loss : 0.2414882630109787
+# acc :  0.9114500284194946
+# acc_score :  0.89887
+
+
+# RobustScaler

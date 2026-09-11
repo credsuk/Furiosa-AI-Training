@@ -6,14 +6,19 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.datasets import boston_housing
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler, RobustScaler
 import numpy as np
+import time
 
 
 #1. 데이터
 (x_train, y_train), (x_test, y_test) = boston_housing.load_data()
 
-scaler = MinMaxScaler()
+# scaler = MinMaxScaler()
+# scaler = StandardScaler()
+# scaler = MaxAbsScaler()
+scaler = RobustScaler()
+
 scaler.fit(x_train)
 x_train = scaler.transform(x_train)
 x_test = scaler.transform(x_test)
@@ -36,15 +41,19 @@ es = EarlyStopping(
     patience = 500,
     restore_best_weights = True,
 )
+
+start_time = time.time()
 hist = model.fit(x_train, y_train, 
                  epochs = 70000, 
                  batch_size = 24, 
                  validation_split = 0.2,
                  callbacks = [es],
                 )
-
+end_time = time.time()
 
 #4. 평가 예측
+print("================= keras28_Scaler03_boton ================")
+print("훈련 시간 :", round(end_time - start_time, 2), "초")
 loss = model.evaluate(x_test, y_test) # 로스율을 계산
 print("loss(mse) : ", loss)
 
@@ -97,8 +106,9 @@ RMSE :  4.846065701363987
 
 """
 
+
+# 이후 값 MinMaxScaler
 """
-이후 값
 Epoch 2398/70000
 loss(mse) :  23.36335563659668
 R2 : 0.7193383491276265
@@ -107,5 +117,25 @@ RMSE :  4.83356555252299
 
 """
 
+# StandardScaler
+# Epoch 1019/70000
+# loss(mse) :  23.648204803466797
+# R2 : 0.7159165034232793
+# mse : 23.64820355600768
+# RMSE :  4.862941862289501
 
 
+# MaxAbsScaler
+# 훈련 시간 : 487.61 초
+# loss(mse) :  23.259370803833008
+# R2 : 0.72058750893292
+# mse : 23.259371080928002
+# RMSE :  4.82279701842489
+
+
+# RobustScaler
+# 훈련 시간 : 45.23 초
+# loss(mse) :  23.38043785095215
+# R2 : 0.7191331559287567
+# mse : 23.38043702210089
+# RMSE :  4.835332152200187
