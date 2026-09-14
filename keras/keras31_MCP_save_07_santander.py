@@ -1,9 +1,8 @@
-# keras28_Scaler07_santander.py 복사
+# keras22_sigmoid_santander.py 복사
 
 import numpy as np
 import pandas as pd
-import time
-import datetime
+import time, datetime
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
@@ -18,14 +17,13 @@ train_csv = pd.read_csv(path + "train.csv", index_col=0,)
 test_csv = pd.read_csv(path + "test.csv", index_col=0,)
 submission = pd.read_csv(path + "sample_submission.csv", index_col=0,)
 
-
 x = train_csv.drop(["target"], axis=1, )
 y = train_csv["target"]
 
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=5221, stratify=y)
 
 
-scaler = RobustScaler()
+scaler = MaxAbsScaler()
 
 scaler.fit(x_train)
 x_train = scaler.transform(x_train)
@@ -48,8 +46,24 @@ model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["acc"],)
 es = EarlyStopping(
     monitor="val_acc",
     mode="max",
-    patience=200,
+    patience=50,
     restore_best_weights=True,
+)
+
+
+############### mcp 세이브 파일명 만들기 시작 ####################
+mcp_path = "./_save/keras31/santander/"
+date = datetime.datetime.now().strftime("%m%d_%H%M")
+filename = "{epoch:04d}-{val_loss:.4f}.keras"
+filepath = "".join([mcp_path, "k31_", date, "_", filename])
+############### mcp 세이브 파일명 만들기 끝 ####################
+
+mcp = ModelCheckpoint(
+    monitor='val_loss', 
+    mode='auto', 
+    save_best_only=True, # 최고의 값만 저장해라
+    filepath=filepath, # 파일 경로
+    verbose=1, # 보여줄지 안보여줄지 확인하는 항목
 )
 
 start_time = time.time()
@@ -57,13 +71,13 @@ hist = model.fit(x_train, y_train,
           epochs=512412512,
           batch_size=791,
           validation_split=0.2,
-          callbacks=[es],
+          callbacks=[es, mcp],
           )
 end_time = time.time()
 
 
 #4. 평가 예측
-print("================= keras28_Scaler07_santander =================")
+print("================= keras31_MCP_save_07_santander =================")
 loss = model.evaluate(x_test, y_test)
 y_pred = model.predict(test_csv)
 y_pred = np.round(y_pred)
@@ -75,10 +89,12 @@ print("loss :", loss[0])
 print("acc : ", loss[1])
 print("acc_score : ", acc_score)
 
+# print(submission.shape, y_pred.shape)
 
 ## 엑셀 다운
 submission['target'] = y_pred
-# print(np.unique(y_pred, return_counts=True))
+print(np.unique(y_pred, return_counts=True))
+
 # submission.to_csv(path + "submit/submission_0908_1730.csv")
 
 
@@ -88,3 +104,8 @@ submission['target'] = y_pred
 # acc :  0.9114500284194946
 # acc_score :  0.89887
 
+
+# 훈련에 걸린 시간 :  42.494 초
+# loss : 0.24184294044971466
+# acc :  0.9129499793052673
+# acc_score :  0.899495
