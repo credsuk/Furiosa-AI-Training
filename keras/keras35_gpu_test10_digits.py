@@ -61,10 +61,12 @@ es = EarlyStopping(
     )
 
 start_time = time.time()
-model.fit(x_train, y_train, epochs=1000, batch_size=32,
+model.fit(x_train, y_train, 
+          epochs=100, 
+          batch_size=32,
           verbose=1,
           validation_split=0.3,
-          callbacks=[es, ],
+        #   callbacks=[es, ],
           )
 end_time = time.time()
 
@@ -87,20 +89,16 @@ print('acc_score = ', accuracy_score)
 print('걸린시간 = ', round(end_time - start_time, 2), "초")
 
 
-# MaxAbsScaler
-# loss =  0.086285300552845
-# acc =  0.97
-# acc_score =  0.9703703703703703
-# 걸린시간 =  10.95 초
+
+# GPU
+# loss =  0.2063213586807251
+# acc =  0.96
+# acc_score =  0.9592592592592593
+# 걸린시간 =  9.15 초
 
 
-# loss =  0.0628291666507721
-# acc =  0.98
-# acc_score =  0.9777777777777777
-# 걸린시간 =  10.13 초
-
-
-# loss =  0.08172474801540375
-# acc =  0.97
-# acc_score =  0.9740740740740741
-# 걸린시간 =  10.31 초
+# CPU
+# loss =  0.265857070684433
+# acc =  0.95
+# acc_score =  0.9518518518518518
+# 걸린시간 =  11.01 초
