@@ -1,12 +1,13 @@
-# keras36_cnn2_mnist_inshow 복사
+# keras39_MaxPooling1_mnist 복사
 # 
 import numpy as np
 import pandas as pd
 import time
 from tensorflow.keras.datasets import mnist, fashion_mnist
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, Dense, Dropout, Flatten, GlobalAveragePooling2D
+from tensorflow.keras.layers import Conv2D, Dense, Dropout, Flatten, MaxPooling2D, GlobalAveragePooling2D
 from tensorflow.keras.callbacks import EarlyStopping
+from sklearn.preprocessing import OneHotEncoder # 분류이기 때문에 OneHot를 해야함
 from sklearn.metrics import accuracy_score
 
 
@@ -14,46 +15,16 @@ from sklearn.metrics import accuracy_score
 #1. 데이터
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
-# print(x_train.shape, y_train.shape) # (60000, 28, 28) (60000,)
-# print(x_test.shape, y_test.shape) # (10000, 28, 28) (10000,)
-# print(np.max(x_train), np.min(x_train)) # 255 0
-# print(np.max(x_test), np.min(x_test)) # 255 0
-# 255가 나오면 문제없이 우리가 원하는 데로 나온거다
-
-
-####### 스케일링 1 #######
-# MinMax스케일링 원값에서 최소값을 뺀것을 최대값으로 나눈다
-# 근데 우리는 이미 최소값이 0인걸 알고, 최대값이 255인걸 안다
-# 그러면 MaxAbsScaler를 사용해도되고 최대값을 아니깐 바로 아래와 같이 해도된다
-# 이미지라서 가능한거
-# x_train = x_train/255. # .(플롯) 을 붙이면 플롯 형태로 간다
-# x_test = x_test/255.
-
-# print(np.max(x_train), np.min(x_train)) # 1.0 0.0
-# print(np.max(x_test), np.min(x_test)) # 1.0 0.0
-
-
-####### 스케일링 2 #######
-# 이미지에서 많이 사용하는거 2번째
-# -1 ~ 1 사이로 만든다
-# 255/2의 값으로 중간값을 먼저 빼고 그 후에 나누기를 하면 
+# 스케일링
 x_train = (x_train - 127.5)/127.5
 x_test = (x_test - 127.5)/127.5
-
-# print(np.max(x_train), np.min(x_train)) # 1.0 -1.0
-# print(np.max(x_test), np.min(x_test))  # 1.0 -1.0
-
-# print(np.unique(y_train)) # [0 1 2 3 4 5 6 7 8 9]
-# print(np.unique(y_train, return_counts=True))
 
 # 4차원 데이터로 변환을 위해서 reshape
 x_train = x_train.reshape(-1, 28, 28, 1)
 x_test = x_test.reshape(-1, 28, 28, 1)
-# print(x_train.shape, x_test.shape) # (60000, 28, 28, 1) (10000, 28, 28, 1)
 
 
 # Y 데이터의 원핫
-from sklearn.preprocessing import OneHotEncoder # 분류이기 때문에 OneHot를 해야함
 ohe = OneHotEncoder(sparse_output=False) # 뭔가 혼동스러운 행열(혼동 행열)을 방지하기 위해서 sparse_output 사용함
 y_train = y_train.reshape(-1, 1) # 수치를 알면 60000, 1 이렇게 해도 되지만 모르면 전체라는 의미에서 -1, 1 이렇게 하면된다
 y_test = y_test.reshape(-1, 1) # 사실상 -1, 1 이게 디폴트
@@ -66,18 +37,10 @@ y_test = ohe.fit_transform(y_test)
 
 
 #2. 모델구성
-# 모델의 구성하는데는 해은 무시해도 된다
-# 그래서 데이터의 수를 제외한 나머지 값을 입력한다
 model = Sequential()
 model.add(Conv2D(64, (3,3), input_shape=(28, 28, 1)))
-# 위에 코드로 커널링 후에 (26, 26, 64) 로 변경됨 (28-3) + 1, (28-3) + 1, 노드의 수
-
+model.add(MaxPooling2D())
 model.add(Conv2D(filters=32, kernel_size=(3,3), activation='relu')) 
-# filters는 Conv2D에서 output 노드 이름, kernel_size 커널의 사이즈 
-# 안보이게 해도 되지만 명확한 정의를 위해 작성을 해봄
-# 위에 커널링 후에 (24, 24, 32_ 로 변경됨
-
-# Dropout도 가능함, 파라미터의 수는 웨이트 + 바이어스의 수 Dropout는 포함되지 않음
 model.add(Dropout(0.2))
 
 model.add(Conv2D(32, (2,2), activation='relu')) # (23, 23, 32)
@@ -85,32 +48,23 @@ model.add(Conv2D(32, (2,2), activation='relu')) # (23, 23, 32)
 model.add(Conv2D(16, (2,2), activation='relu')) # (22, 22, 6)
 model.add(Dropout(0.2))
 
+
 model.add(Conv2D(16, (2,2), activation='relu')) # (21, 21, 16)
 model.add(Dropout(0.2))
 
 model.add(Conv2D(16, (2,2), activation='relu')) # (20, 20, 16)
 
-model.add(Conv2D(8, (5,5), activation='relu')) # (16, 16, 8) # 추가
-
-# 20, 20, 16에서 Dense로 변경하려면 10, 만들어야 하는데 바로는 안됨
-# 그래서 Flatten 레이어를 사용한다
-# 한마디로 데이터를 쫙~ 핀다 연산하지 않고 모양만 바꾼다
 # model.add(Flatten())
 model.add(GlobalAveragePooling2D())
 
-# 6400개를 바로 output으로 보내면 64,000개로 노드가 너무 크니깐 Dense를 통해서 줄여준다
-# units은 output 노드의 수(Dense에서)
 model.add(Dense(units=8, activation='relu'))
 model.add(Dropout(0.2))
-
 model.add(Dense(units=16, activation='relu'))
-
-# 다중 행열 이니깐 softmax
 model.add(Dense(10, activation='softmax')) # (10, )
 
 model.summary()
 
-exit()
+
 
 
 #3. 컴파일, 훈련
@@ -151,13 +105,6 @@ acc_score = accuracy_score(y_test, y_predict)
 print("acc_score :", acc_score)
 
 
-# CPU
-# 걸린시간 :  587.93 초
-# loss :  0.04654049500823021
-# acc :  0.9887999892234802
-# acc_score : 0.9888
-
-
 # GPU
 # 걸린시간 :  124.68 초
 # loss :  0.04402141645550728
@@ -165,8 +112,15 @@ print("acc_score :", acc_score)
 # acc_score : 0.9905
 
 
+# Flatten
+# 걸린시간 :  451.76 초
+# loss :  0.04781254008412361
+# acc :  0.9860000014305115
+# acc_score : 0.986
 
 
-
-
-
+# GlobalAveragePooling2D
+# 걸린시간 :  161.18 초
+# loss :  0.051816169172525406
+# acc :  0.9851999878883362
+# acc_score : 0.9852
