@@ -34,13 +34,13 @@ x_test = scaler.transform(x_test)
 print(x_train.shape, x_test.shape) # (160000, 200) (40000, 200)
 
 
-x_train = x_train.reshape(-1, 50, 40, 1)
-x_test = x_test.reshape(-1, 50, 40, 1)
+x_train = x_train.reshape(-1, 50, 4, 1)
+x_test = x_test.reshape(-1, 50, 4, 1)
 
 
 #2. 모델구성
 model = Sequential()
-model.add(Conv2D(15, (3,4), padding='same', input_shape=(50,40,1), activation='relu'))
+model.add(Conv2D(15, (3,4), padding='same', input_shape=(50,4,1), activation='relu'))
 model.add(Conv2D(10, (3,4), padding='same', activation='relu'))
 model.add(GlobalAveragePooling2D())
 model.add(Dense(24, activation='relu'))
@@ -69,9 +69,9 @@ end_time = time.time()
 
 
 #4. 평가 예측
-print("================= keras28_Scaler07_santander =================")
+print("================= santander =================")
 loss = model.evaluate(x_test, y_test)
-y_pred = model.predict(test_csv.reshape(-1, 50, 40, 1))
+y_pred = model.predict(test_csv.to_numpy().reshape(-1, 50, 4, 1))
 y_pred = np.round(y_pred)
 acc_score = accuracy_score(y, y_pred) ####### 여기 좀 이상함 확인해봐야됨 #########
 
@@ -89,3 +89,7 @@ print("acc_score : ", acc_score)
 # acc :  0.9114500284194946
 # acc_score :  0.89887
 
+# 훈련에 걸린 시간 :  324.9737 초
+# loss : 0.2714565396308899
+# acc :  0.9050250053405762
+# acc_score :  0.10049

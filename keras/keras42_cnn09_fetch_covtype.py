@@ -4,7 +4,7 @@ from sklearn.datasets import fetch_covtype
 from sklearn.model_selection import train_test_split
 
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dense, Conv2D, GlobalAveragePooling2D
 from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler, RobustScaler
@@ -50,18 +50,17 @@ x_test = scaler.transform(x_test)
 
 
 
-print(x_train.shape, x_test.shape) #
+print(x_train.shape, x_test.shape) # (435759, 54) (145253, 54)
 
-exit()
 
-x_train = x_train.reshape(-1, 5, 2, 1)
-x_test = x_test.reshape(-1, 5, 2, 1)
+x_train = x_train.reshape(-1, 54, 1, 1)
+x_test = x_test.reshape(-1, 54, 1, 1)
 
 
 #2. 모델구성
 model = Sequential()
-model.add(Conv2D(15, (2,2), padding='same', input_shape=(5,2,1), activation='relu'))
-model.add(Conv2D(10, (2,2), padding='same', activation='relu'))
+model.add(Conv2D(15, (2,1), padding='same', input_shape=(54,1,1), activation='relu'))
+model.add(Conv2D(10, (2,1), padding='same', activation='relu'))
 model.add(GlobalAveragePooling2D())
 model.add(Dense(24, activation='relu'))
 model.add(Dense(7, activation='softmax'))
@@ -86,7 +85,7 @@ es = EarlyStopping(
 start_time = time.time()
 model.fit(
     x_train, y_train,
-    epochs=10000,
+    epochs=500,
     batch_size=6931,
     validation_split=0.2,
     callbacks=[es],
@@ -113,11 +112,6 @@ print("걸린시간 :", round(end_time - start_time, 2), "초")
 
 ## acc = 0.93 이상
 
-# loss : 0.27389076352119446
-# acc : 0.8916993141174316
-# acc_score :  0.8916993108576071
-# 걸린시간 : 427.43 초
-
 
 """
 MinMaxScaler
@@ -128,23 +122,12 @@ acc_score :  0.8854825717885345
 """
 
 
-# StandardScaler
-# loss : 0.18026182055473328
-# acc : 0.9324695467948914
-# acc_score :  0.9324695531245482
-# 걸린시간 : 259.58 초
+# loss : 0.6974545121192932
+# acc : 0.7028908133506775
+# acc_score :  0.7028908180898157
+# 걸린시간 : 150.31 초
 
-
-
-# MaxAbsScaler
-# loss : 0.24471095204353333
-# acc : 0.9050966501235962
-# acc_score :  0.9050966245103371
-# 걸린시간 : 353.14 초
-
-
-# RobustScaler
-# loss : 0.19473013281822205
-# acc : 0.9255024194717407
-# acc_score :  0.9255023992619774
-# 걸린시간 : 286.49 초
+# loss =  1.3862152099609375
+# acc =  0.53
+# acc_score =  0.5296296296296297
+# 걸린시간 =  51.39 초

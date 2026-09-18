@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import time
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dense, Conv2D, GlobalAveragePooling2D
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from tensorflow.keras.callbacks import EarlyStopping
@@ -46,18 +46,17 @@ print(x_train.shape, x_test.shape)  # (1257, 64) (540, 64)
 print(y_train.shape, y_test.shape)  # (1257, 10) (540, 10)
 
 
-print(x_train.shape, x_test.shape) #
+print(x_train.shape, x_test.shape) # (1257, 64) (540, 64)
 
-exit()
 
-x_train = x_train.reshape(-1, 5, 2, 1)
-x_test = x_test.reshape(-1, 5, 2, 1)
+x_train = x_train.reshape(-1, 64, 1, 1)
+x_test = x_test.reshape(-1, 64, 1, 1)
 
 
 #2. 모델구성
 model = Sequential()
-model.add(Conv2D(15, (2,2), padding='same', input_shape=(5,2,1), activation='relu'))
-model.add(Conv2D(10, (2,2), padding='same', activation='relu'))
+model.add(Conv2D(15, (2,1), padding='same', input_shape=(64,1,1), activation='relu'))
+model.add(Conv2D(10, (2,1), padding='same', activation='relu'))
 model.add(GlobalAveragePooling2D())
 model.add(Dense(24, activation='relu'))
 model.add(Dense(10, activation='softmax'))
@@ -76,7 +75,7 @@ es = EarlyStopping(
     )
 
 start_time = time.time()
-model.fit(x_train, y_train, epochs=100, batch_size=32,
+model.fit(x_train, y_train, epochs=500, batch_size=32,
           verbose=1,
           validation_split=0.3,
           callbacks=[es],

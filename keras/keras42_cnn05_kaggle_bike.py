@@ -63,7 +63,7 @@ es = EarlyStopping(
 
 start_time = time.time()
 hist = model.fit(x_train, y_train, 
-                 epochs = 100, 
+                 epochs = 500, 
                  batch_size = 32, 
                 #  validation_split = 0.2,
                 #  callbacks = [es]

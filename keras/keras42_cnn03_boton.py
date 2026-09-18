@@ -49,7 +49,7 @@ es = EarlyStopping(
 
 start_time = time.time()
 hist = model.fit(x_train, y_train, 
-                 epochs = 70000, 
+                 epochs = 500, 
                  batch_size = 24, 
                 #  validation_split = 0.2,
                  callbacks = [es],
@@ -92,4 +92,8 @@ RMSE :  4.83356555252299
 """
 
 
-
+# 훈련 시간 : 23.34 초
+# loss(mse) :  30.737287521362305
+# R2 : 0.6307560361224562
+# mse : 30.737288595872784
+# RMSE :  5.54412198602022

@@ -4,7 +4,7 @@ from sklearn.datasets import load_wine
 from sklearn.model_selection import train_test_split
 
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dense, Conv2D, GlobalAveragePooling2D
 from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler, RobustScaler
@@ -34,28 +34,27 @@ x_train, x_test, y_train, y_test = train_test_split(
 )
 
 
-# scaler = MinMaxScaler()
+scaler = MinMaxScaler()
 # scaler = StandardScaler()
 # scaler = MaxAbsScaler()
-scaler = RobustScaler()
+# scaler = RobustScaler()
 
 scaler.fit(x_train)
 x_train = scaler.transform(x_train)
 x_test = scaler.transform(x_test)
 
 
-print(x_train.shape, x_test.shape) #
+print(x_train.shape, x_test.shape) # (142, 13) (36, 13)
 
-exit()
 
-x_train = x_train.reshape(-1, 5, 2, 1)
-x_test = x_test.reshape(-1, 5, 2, 1)
+x_train = x_train.reshape(-1, 13, 1, 1)
+x_test = x_test.reshape(-1, 13, 1, 1)
 
 
 #2. 모델구성
 model = Sequential()
-model.add(Conv2D(15, (2,2), padding='same', input_shape=(5,2,1), activation='relu'))
-model.add(Conv2D(10, (2,2), padding='same', activation='relu'))
+model.add(Conv2D(15, (2,1), padding='same', input_shape=(13,1,1), activation='relu'))
+model.add(Conv2D(10, (2,1), padding='same', activation='relu'))
 model.add(GlobalAveragePooling2D())
 model.add(Dense(24, activation='relu'))
 model.add(Dense(3, activation='softmax'))
@@ -79,7 +78,7 @@ es = EarlyStopping(
 start_time = time.time()
 model.fit(
     x_train, y_train,
-    epochs=300,
+    epochs=500,
     batch_size=32,
     validation_split=0.2,
     callbacks=[es],
@@ -88,7 +87,7 @@ end_time = time.time()
 
 
 #4. 평가 예측
-print("================= keras28_Scaler08_wine =================")
+print("================= wine =================")
 result = model.evaluate(x_test, y_test)
 print("loss :", result[0])
 print("acc :", result[1])
@@ -114,19 +113,7 @@ print("걸린시간 : ", round(end_time - start_time, 2), "초")
 # acc_score :  0.9722222222222222
 # 걸린시간 :  12.32 초
 
-
-# StandardScaler
-# loss : 0.0860663577914238
-# acc : 0.9722222089767456
-# acc_score :  0.9722222222222222
-# 걸린시간 :  12.99 초
-
-
-# MaxAbsScaler
-# loss : 0.10959383845329285
-# acc : 0.9722222089767456
-# acc_score :  0.9722222222222222
-# 걸린시간 :  20.5 초
-
-
-# RobustScaler
+# loss : 0.47242915630340576
+# acc : 0.8055555820465088
+# acc_score :  0.8055555555555556
+# 걸린시간 :  15.36 초
