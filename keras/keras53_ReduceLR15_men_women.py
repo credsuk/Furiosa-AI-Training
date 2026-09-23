@@ -108,9 +108,17 @@ model.summary()
 from tensorflow.keras.optimizers import Adam
 learning_rate = 0.01
 
-
 model.compile(loss='binary_crossentropy', optimizer=Adam(learning_rate=learning_rate), metrics=['acc'], )
 
+from tensorflow.keras.callbacks import ReduceLROnPlateau
+
+rlr = ReduceLROnPlateau(
+    monitor='val_loss',
+    mode='min',
+    patience=20,
+    verbose=1,
+    factor=0.5 # 나누는 기준 기본값은 0.1
+)
 
 es = EarlyStopping(
     monitor='val_loss',
@@ -125,7 +133,7 @@ model.fit(
     epochs=5000,
     batch_size=64,
     validation_split=0.2,
-    callbacks=[es,],
+    callbacks=[es, rlr],
 )
 end_time = time.time()
 
@@ -160,3 +168,19 @@ print("acc_score :", np.round(acc_score, 4))
 # loss :  0.24435527622699738
 # acc :  0.9119552373886108
 # acc_score : 0.912
+
+
+# learning_rate = 0.01
+# 훈련에 걸린시간 : 1247.31 초
+# 증폭 데이터 생성에 걸린시간 : 9.27 초
+# loss :  0.33234307169914246
+# acc :  0.8542402982711792
+# acc_score : 0.8542
+
+
+
+# 훈련에 걸린시간 : 927.36 초
+# 증폭 데이터 생성에 걸린시간 : 12.84 초
+# loss :  0.4634822905063629
+# acc :  0.7753239274024963
+# acc_score : 0.7753

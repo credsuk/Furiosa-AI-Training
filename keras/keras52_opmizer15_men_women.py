@@ -108,7 +108,6 @@ model.summary()
 from tensorflow.keras.optimizers import Adam
 learning_rate = 0.01
 
-
 model.compile(loss='binary_crossentropy', optimizer=Adam(learning_rate=learning_rate), metrics=['acc'], )
 
 
@@ -160,3 +159,11 @@ print("acc_score :", np.round(acc_score, 4))
 # loss :  0.24435527622699738
 # acc :  0.9119552373886108
 # acc_score : 0.912
+
+
+# learning_rate = 0.01
+# 훈련에 걸린시간 : 1247.31 초
+# 증폭 데이터 생성에 걸린시간 : 9.27 초
+# loss :  0.33234307169914246
+# acc :  0.8542402982711792
+# acc_score : 0.8542

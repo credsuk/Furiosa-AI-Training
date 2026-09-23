@@ -1,3 +1,4 @@
+################ DNN ##################
 01_californaia
 02_diabetes
 03_boston
@@ -10,3 +11,11 @@
 08_wine
 09_fatch_covtype
 10_digits
+
+################ CNN ##################
+11 minist
+12 fashoin
+13 cifar10
+14 cifar100
+
+15 man_woman

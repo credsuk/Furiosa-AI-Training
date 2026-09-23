@@ -1,0 +1,138 @@
+# keras39_MaxPooling1_mnist 복사
+# 
+import numpy as np
+import pandas as pd
+import time
+from tensorflow.keras.datasets import mnist, fashion_mnist
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, Dense, Dropout, Flatten, MaxPooling2D
+from tensorflow.keras.callbacks import EarlyStopping
+from sklearn.preprocessing import OneHotEncoder # 분류이기 때문에 OneHot를 해야함
+from sklearn.metrics import accuracy_score
+
+
+
+#1. 데이터
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+
+# 스케일링
+x_train = (x_train - 127.5)/127.5
+x_test = (x_test - 127.5)/127.5
+
+# 4차원 데이터로 변환을 위해서 reshape
+x_train = x_train.reshape(-1, 28, 28, 1)
+x_test = x_test.reshape(-1, 28, 28, 1)
+
+
+# Y 데이터의 원핫
+ohe = OneHotEncoder(sparse_output=False) # 뭔가 혼동스러운 행열(혼동 행열)을 방지하기 위해서 sparse_output 사용함
+y_train = y_train.reshape(-1, 1) # 수치를 알면 60000, 1 이렇게 해도 되지만 모르면 전체라는 의미에서 -1, 1 이렇게 하면된다
+y_test = y_test.reshape(-1, 1) # 사실상 -1, 1 이게 디폴트
+
+y_train = ohe.fit_transform(y_train)
+y_test = ohe.fit_transform(y_test)
+
+# print(y_train.shape, y_test.shape) # (60000, 10) (10000, 10)
+
+
+
+#2. 모델구성
+model = Sequential()
+model.add(Conv2D(64, (3,3), input_shape=(28, 28, 1)))
+model.add(MaxPooling2D())
+model.add(Conv2D(filters=32, kernel_size=(3,3), activation='relu')) 
+model.add(Dropout(0.2))
+
+model.add(Conv2D(32, (2,2), activation='relu')) # (23, 23, 32)
+
+model.add(Conv2D(16, (2,2), activation='relu')) # (22, 22, 6)
+model.add(Dropout(0.2))
+
+
+model.add(Conv2D(16, (2,2), activation='relu')) # (21, 21, 16)
+model.add(Dropout(0.2))
+
+model.add(Conv2D(16, (2,2), activation='relu')) # (20, 20, 16)
+
+model.add(Flatten())
+
+model.add(Dense(units=8, activation='relu'))
+model.add(Dropout(0.2))
+model.add(Dense(units=16, activation='relu'))
+model.add(Dense(10, activation='softmax')) # (10, )
+
+model.summary()
+
+
+
+
+#3. 컴파일, 훈련
+from tensorflow.keras.optimizers import Adam
+learning_rate = 0.01
+
+model.compile(loss='categorical_crossentropy',  optimizer=Adam(learning_rate=learning_rate), metrics=['acc']) 
+
+from tensorflow.keras.callbacks import ReduceLROnPlateau
+
+rlr = ReduceLROnPlateau(
+    monitor='val_loss',
+    mode='min',
+    patience=20,
+    verbose=1,
+    factor=0.5 # 나누는 기준 기본값은 0.1
+)
+
+es = EarlyStopping(
+    monitor='val_loss',
+    mode='min',
+    patience=50,
+    restore_best_weights=True,
+)
+
+start_time = time.time()
+model.fit(
+    x_train, y_train,
+    epochs=5000,
+    batch_size=228,
+    verbose=1,
+    validation_split=0.2,
+    callbacks=[es, rlr]
+)
+end_time = time.time()
+
+
+
+
+#4. 평가, 예측
+loss = model.evaluate(x_test, y_test, verbose=1)
+print("걸린시간 : ", round(end_time - start_time, 2), "초")
+print("================= model.evaluate ===========================")
+print("loss : ", loss[0])
+print("acc : ", loss[1])
+
+y_predict = model.predict(x_test)
+y_predict = np.argmax(y_predict, axis=1)
+y_test = np.argmax(y_test, axis=1)
+acc_score = accuracy_score(y_test, y_predict)
+print("acc_score :", acc_score)
+
+
+
+# 걸린시간 :  451.76 초
+# loss :  0.04781254008412361
+# acc :  0.9860000014305115
+# acc_score : 0.986
+
+
+
+# learning_rate = 0.01
+# 걸린시간 :  248.35 초
+# loss :  0.04373432695865631
+# acc :  0.9890000224113464
+# acc_score : 0.989
+
+
+# 걸린시간 :  1367.14 초
+# loss :  0.09348716586828232
+# acc :  0.9743000268936157
+# acc_score : 0.9743
