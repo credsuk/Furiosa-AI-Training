@@ -220,5 +220,5 @@ __marimo__/
 
 # IDE
 .vscode/
-_data/kaggle_santander/
 _data/
+.idea/
