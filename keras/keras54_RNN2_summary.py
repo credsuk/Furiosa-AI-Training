@@ -27,7 +27,7 @@ x = x.reshape(x.shape[0], x.shape[1], 1) # 3차원으로 변경
 
 #2. 모델구성
 model = Sequential()
-model.add(SimpleRNN(2, input_shape=(3, 1))) 
+model.add(SimpleRNN(10, input_shape=(3, 1))) 
 
 model.add(Dense(7, activation='relu'))
 model.add(Dense(1))

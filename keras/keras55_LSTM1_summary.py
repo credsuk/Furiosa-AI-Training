@@ -3,7 +3,7 @@
 
 import numpy as np
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, SimpleRNN, LSTM
+from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, GRU
 
 #1. 데이터
 datasets = np.array([1,2,3,4,5,6,7,8,9,10])
@@ -27,14 +27,20 @@ x = x.reshape(x.shape[0], x.shape[1], 1) # 3차원으로 변경
 
 #2. 모델구성
 model = Sequential()
-model.add(LSTM(1, input_shape=(3, 1))) 
+# model.add(SimpleRNN(10, input_shape=(3, 1))) 
+# model.add(LSTM(units=10, input_shape=(3, 1))) 
+model.add(GRU(units=10, input_shape=(3, 1))) 
 model.add(Dense(64, activation='relu'))
 model.add(Dense(32, activation='relu'))
 model.add(Dense(16, activation='relu'))
 model.add(Dense(1))
 
 model.summary()
+
 """
+SimpleRNN * 4 하면 LSTM
+SimpleRNN * 3 하면 GRU여야 하는데 숫자가 다름
+
 Cell State
 Cell State는 시간에 따라 변하지 않고 정보를 유지하는 경로
 
@@ -47,14 +53,13 @@ input gate는 새로운 정보를 cell state에 얼마나 추가할지를 결정
 cell update  
 cell update는 LSTM에서 forget gate와 input gate를 사용해 cell state를 업데이트
 
-output gate
+output gate1
 Output gate는 LSTM에서 현재 시점의 hidden state를 결정하는 데 중요한 역할
 
 
 (gate + state) *  (( units 개수 * units 개수 ) + ( feature 수 + units 개수 ) + (bias * unit 개수))
 
 """
-exit()
 
 #3. 컴파일, 훈련
 from tensorflow.keras.optimizers import Adam
