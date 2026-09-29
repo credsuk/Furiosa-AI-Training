@@ -210,7 +210,114 @@ train_test_split(x, y)에서는 X와 Y의 행 대응 유지
 평가 지표는 학습 데이터가 아닌 별도 테스트 데이터로 확인
 ```
 
-## 14. 최초 복습 문제
+## 14. validation과 과적합 대응
+
+`keras16`, `keras17`은 train/test 외에 validation 데이터를 사용하는 방법을 다룹니다.
+
+- train: 가중치 학습
+- validation: 학습 중 모델·하이퍼파라미터 선택
+- test: 최종 일반화 성능 평가
+
+직접 `x_val`, `y_val`을 나눌 수도 있고, `model.fit(..., validation_split=0.2)`로 학습 데이터 일부를 validation으로 자동 분리할 수도 있습니다. test 데이터를 모델 선택에 계속 사용하면 test 성능에 맞춰지는 문제가 생기므로 validation을 따로 두는 것이 중요합니다.
+
+`keras18`은 학습 시간을 측정하고, `keras19`는 `history`와 matplotlib로 train loss와 validation loss를 시각화해 과적합을 확인합니다. train loss는 계속 내려가는데 validation loss가 다시 올라가면 과적합 신호입니다.
+
+`keras20`은 `EarlyStopping`을 사용합니다. validation 성능이 더 좋아지지 않을 때 학습을 중단해 불필요한 epoch와 과적합을 줄입니다. `monitor`, `patience`, `restore_best_weights` 설정을 함께 이해해야 합니다.
+
+## 15. 회귀와 분류
+
+`keras21`부터는 분류 문제를 다룹니다. 문제 유형에 따라 마지막 레이어와 손실 함수를 바꿉니다.
+
+### 이진 분류
+
+- 출력층: `Dense(1, activation='sigmoid')`
+- 손실: `binary_crossentropy`
+- 예측 확률을 임계값으로 클래스에 변환
+- 평가: accuracy 등
+
+유방암과 Santander 예제가 이 구조를 사용합니다. `stratify=y`는 train/test 분할 때 클래스 비율을 유지하기 위해 사용합니다.
+
+### 다중 분류
+
+- 정답을 one-hot 형태로 변환
+- 출력층: 클래스 수만큼의 `Dense(..., activation='softmax')`
+- 손실: `categorical_crossentropy`
+- 예측 결과는 각 클래스 확률 벡터
+
+Iris, Wine, Covtype, Digits 예제가 이 구조를 사용합니다. 마지막 출력 노드 수는 클래스 수와 같아야 하며, one-hot 정답의 열 수와도 일치해야 합니다.
+
+## 16. 스케일링
+
+`keras27`, `keras28`, `keras52`에서는 특성의 크기와 분포를 조정합니다.
+
+- `MinMaxScaler`: 일정 범위로 변환
+- `StandardScaler`: 평균 0, 표준편차 1에 가깝게 변환
+- `MaxAbsScaler`: 절댓값 최대치를 기준으로 변환
+- `RobustScaler`: 중앙값과 사분위 범위를 사용해 이상치에 비교적 강함
+
+중요한 원칙은 scaler를 train 데이터에만 `fit`하고, test에는 같은 scaler로 `transform`만 하는 것입니다.
+
+```python
+scaler.fit(x_train)
+x_train = scaler.transform(x_train)
+x_test = scaler.transform(x_test)
+```
+
+test까지 포함해 `fit`하면 test 정보가 학습 과정에 섞이는 데이터 누수가 발생합니다.
+
+## 17. 모델 저장과 체크포인트
+
+`keras29`는 모델 전체 또는 가중치만 저장·복원합니다.
+
+- `model.save(...)`: 구조·가중치·compile 정보 등을 포함한 전체 모델
+- `load_model(...)`: 저장된 전체 모델 복원
+- `save_weights(...)`: 가중치만 저장
+- `load_weights(...)`: 동일하거나 호환되는 구조에 가중치 적용
+
+`keras30`, `keras31`은 `ModelCheckpoint`를 사용해 학습 중 성능이 좋은 모델을 파일로 보존합니다. 전체 모델 저장과 weights-only 저장은 복원할 때 필요한 코드와 파일 확장자가 다르므로 구분해야 합니다.
+
+## 18. Dropout과 optimizer
+
+`keras33`, `keras34`는 `Dropout`을 이용한 정규화를 다룹니다. Dropout은 학습 중 일부 뉴런을 임시로 비활성화해 특정 경로에 과도하게 의존하는 것을 줄입니다. 평가·예측 시에는 일반적으로 자동으로 비활성화됩니다.
+
+`keras52`는 `Adam(learning_rate=...)`처럼 learning rate를 직접 조정합니다. learning rate가 너무 크면 손실이 불안정하고, 너무 작으면 학습이 느릴 수 있습니다. 성능 비교 시 epoch만 늘리지 말고 데이터 스케일·optimizer·learning rate·검증 손실을 함께 봐야 합니다.
+
+## 19. CNN과 이미지 데이터
+
+`keras36`부터 CNN을 사용합니다.
+
+- `Conv2D`: 이미지의 지역 패턴 추출
+- `MaxPooling2D` 또는 `MaxPool2D`: 공간 크기 축소와 중요한 특징 선택
+- `Dropout`: 과적합 완화
+- `Flatten`: CNN 출력을 1차원으로 변환
+- `GlobalAveragePooling2D`: 공간 위치별 평균으로 요약해 파라미터를 줄임
+- 마지막 `sigmoid` 또는 `softmax`: 분류 클래스 수에 맞춘 출력
+
+입력 shape는 보통 `(높이, 너비, 채널)`입니다.
+
+- MNIST/Fashion-MNIST: `(28, 28, 1)`
+- CIFAR10/100: `(32, 32, 3)`
+- 컬러 사진 예제: `(100, 100, 3)` 또는 `(200, 200, 3)`
+
+Conv2D의 kernel 크기와 pooling을 거치면 높이·너비가 줄어듭니다. 각 층 뒤의 shape가 다음 층의 입력과 맞는지 확인해야 합니다.
+
+## 20. 이미지 파일 처리와 증강
+
+`keras45`부터 이미지를 NumPy 배열로 변환해 저장하고 불러옵니다. `keras48`은 `load_img`, `img_to_array`로 한 장의 이미지를 모델 입력용 배열로 바꾸는 과정을 보여줍니다. 학습한 모델을 불러온 뒤 새 이미지를 같은 전처리와 shape로 맞춰 예측해야 합니다.
+
+`keras50`, `keras51`은 `ImageDataGenerator`로 회전·이동·확대·반전 등의 변형을 만들어 학습 데이터 다양성을 높입니다. 증강은 일반적으로 train 데이터에 적용하고, validation/test는 실제 평가를 위해 원래 분포를 유지해야 합니다.
+
+## 21. 전체 범위 핵심 선택표
+
+| 문제 | 출력층 | 손실 함수 | 대표 평가 |
+| --- | --- | --- | --- |
+| 연속값 1개 회귀 | `Dense(1)` | `mse` | MSE, RMSE, R2 |
+| 이진 분류 | `Dense(1, sigmoid)` | `binary_crossentropy` | accuracy |
+| 다중 분류 | `Dense(클래스 수, softmax)` | `categorical_crossentropy` | accuracy |
+| 이미지 이진 분류 | CNN + `Dense(1, sigmoid)` | `binary_crossentropy` | accuracy |
+| 이미지 다중 분류 | CNN + `Dense(클래스 수, softmax)` | `categorical_crossentropy` | accuracy |
+
+## 22. 최초 복습 문제
 
 ### 기본 개념
 
@@ -251,6 +358,27 @@ train_test_split(x, y)에서는 X와 Y의 행 대응 유지
 23. 모델 성능을 평가할 때 MSE, RMSE, R2를 함께 보는 이유를 설명하세요.
 24. 단순한 모델과 깊은 모델 중 어느 쪽이 항상 더 좋은지, 그렇지 않다면 왜 그런지 설명하세요.
 25. 현재 저장소의 학습 흐름을 `데이터 → 모델 → 학습 → 평가` 순서로 5문장 이내에 요약하세요.
+
+### 확장 범위 문제
+
+26. train, validation, test 데이터를 각각 언제 사용하며 서로 바꾸면 안 되는 이유는 무엇입니까?
+27. train loss는 내려가고 validation loss는 올라갈 때 어떤 현상이며, `EarlyStopping`은 어떻게 도움을 줍니까?
+28. 이진 분류와 다중 분류에서 출력층과 손실 함수를 각각 작성하세요.
+29. `sigmoid`와 `softmax`의 출력값은 각각 어떤 의미를 가집니까?
+30. `stratify=y`를 사용하는 이유는 무엇입니까?
+31. `StandardScaler`를 test 데이터에 다시 `fit`하면 안 되는 이유를 데이터 누수 관점에서 설명하세요.
+32. `model.save()`와 `model.save_weights()`의 차이를 설명하세요.
+33. `ModelCheckpoint`는 어떤 상황에서 유용합니까?
+34. Dropout이 학습 중과 평가 중에 다르게 동작하는 이유는 무엇입니까?
+35. Conv2D, MaxPooling2D, Flatten의 역할을 순서대로 설명하세요.
+36. 입력 이미지 shape가 `(32, 32, 3)`이라는 것은 무엇을 의미합니까?
+37. CNN에서 pooling을 사용하면 공간 크기와 특징 표현에 어떤 변화가 생깁니까?
+38. `GlobalAveragePooling2D`와 `Flatten`의 차이를 설명하세요.
+39. `ImageDataGenerator`를 train 데이터에는 적용하고 test 데이터에는 조심해야 하는 이유는 무엇입니까?
+40. learning rate가 너무 크거나 너무 작을 때 학습에 어떤 문제가 생길 수 있습니까?
+41. 회귀 문제에 sigmoid 출력층과 categorical crossentropy를 그대로 사용하면 안 되는 이유는 무엇입니까?
+42. 이미지 파일을 `load_img`와 `img_to_array`로 변환한 뒤 모델에 넣기 전에 확인해야 할 전처리는 무엇입니까?
+43. CPU와 GPU 학습 시간 비교에서 시간만 보고 판단하면 안 되는 이유는 무엇입니까?
 
 ## 답변 방법
 
