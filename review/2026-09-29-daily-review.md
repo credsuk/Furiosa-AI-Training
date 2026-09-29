@@ -29,37 +29,37 @@
 
 다음 코드에서 `model.add(LSTM(15, input_shape=(4, 2)))`가 의미하는 입력 구조로 가장 알맞은 것은 무엇입니까?
 
-A. 샘플마다 timestep 2개, feature 4개
-B. 샘플마다 timestep 4개, feature 2개
-C. 전체 데이터가 4개 샘플이고 feature가 2개
-D. 출력이 4개이고 입력 feature가 2개
+- **A.** 샘플마다 timestep 2개, feature 4개
+- **B.** 샘플마다 timestep 4개, feature 2개
+- **C.** 전체 데이터가 4개 샘플이고 feature가 2개
+- **D.** 출력이 4개이고 입력 feature가 2개
 
 ### 객관식 2 — 코드 실행 결과
 
 `a = np.array(range(1, 11))`, `size = 5`일 때 `split_x(a, size)`가 반환하는 배열의 shape는 무엇입니까?
 
-A. `(5, 5)`
-B. `(6, 4)`
-C. `(6, 5)`
-D. `(10, 5)`
+- **A.** `(5, 5)`
+- **B.** `(6, 4)`
+- **C.** `(6, 5)`
+- **D.** `(10, 5)`
 
 ### 객관식 3 — 올바른 코드 선택
 
 길이 5인 window에서 앞의 4개를 입력 X, 마지막 1개를 정답 y로 만들려 할 때 가장 적절한 코드는 무엇입니까?
 
-A. `x = bbb[:, 1:]`; `y = bbb[:, :1]`
-B. `x = bbb[:, :-1]`; `y = bbb[:, -1:]`
-C. `x = bbb[:-1, :]`; `y = bbb[-1:, :]`
-D. `x = bbb[:, -1:]`; `y = bbb[:, :-1]`
+- **A.** `x = bbb[:, 1:]`; `y = bbb[:, :1]`
+- **B.** `x = bbb[:, :-1]`; `y = bbb[:, -1:]`
+- **C.** `x = bbb[:-1, :]`; `y = bbb[-1:, :]`
+- **D.** `x = bbb[:, -1:]`; `y = bbb[:, :-1]`
 
 ### 객관식 4 — O/X 및 오류 원인
 
 다음 설명은 맞습니까? “시계열 입력이 `(샘플, timestep, feature)`일 때 `input_shape`에는 샘플 수까지 포함해 `input_shape=(샘플, timestep, feature)`로 작성해야 한다.”
 
-A. O — 샘플 수를 포함해야 한다.
-B. X — `input_shape`에는 `(timestep, feature)`만 넣는다.
-C. O — 단, LSTM일 때만 그렇다.
-D. X — `input_shape`에는 feature 수만 넣는다.
+- **A.** O — 샘플 수를 포함해야 한다.
+- **B.** X — `input_shape`에는 `(timestep, feature)`만 넣는다.
+- **C.** O — 단, LSTM일 때만 그렇다.
+- **D.** X — `input_shape`에는 feature 수만 넣는다.
 
 ### 주관식 5 — 개념 설명
 
