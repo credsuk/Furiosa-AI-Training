@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, LSTM, SimpleRNN, GRU, Dropout
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
@@ -12,7 +11,6 @@ x = np.array([[1,2,3], [2,3,4], [3,4,5], [4,5,6],
               [9,10,11], [10,11,12],
               [20,30,40], [30,40,50], [40,50,60],
               ])
-#원데이터는 아마도.. [1,2,3,4,5,6,7,8,9,10,1,12,20,30,40,50,60] 일꺼다
 
 y = np.array([4,5,6,7,8,9,10,11,12,13,50,60,70])
 # print(x.shape, y.shape) # (13, 3) (13,)
@@ -27,32 +25,35 @@ x_predict = x_predict.reshape(-1, 3, 1)
 # print(x_predict.shape) # (3, 1)
 
 
-#2. 모델 구축
+#2. 모델구성
 model = Sequential()
-model.add(LSTM(10, input_shape=(3,1)))
-model.add(Dense(64, activation='relu'))
-model.add(Dense(128, activation='relu'))
-model.add(Dense(64, activation='relu'))
-model.add(Dense(32, activation='relu'))
-model.add(Dense(8, activation='relu'))
+model.add(LSTM(units=10, input_shape=(3,1), return_sequences=True,))
+model.add(LSTM(15, return_sequences=True))
+model.add(GRU(36, return_sequences=True))
+model.add(GRU(24, return_sequences=True))
+model.add(GRU(10, return_sequences=True))
+model.add(LSTM(6))
+# model.add(Dense(32))
+# model.add(Dense(54))
 model.add(Dense(1))
 
-# model.summary()
+model.summary()
 
-#3. 컴파일, 훈련
-learning_rate = 0.05
+
+#3. 컴파일 훈련
+learning_rate = 0.002
 rlr = ReduceLROnPlateau(
     monitor='val_loss',
     mode='min',
-    patience=80,
+    patience=60,
     verbose=1,
-    factor=0.1 # 나누는 기준 기본값은 0.1
+    factor=0.2 # 나누는 기준 기본값은 0.1
 )
 
 es = EarlyStopping(
     monitor='val_loss',
     mode="min",
-    patience=150,
+    patience=100,
     restore_best_weights=True,
 )
 
@@ -75,5 +76,10 @@ print("y_predict 결과 : ", y_predict)
 
 
 
-# loss :  38.46533966064453
-# y_predict 결과 :  [[41.53997]  [41.53997]  [41.53997]]
+
+
+
+
+# loss :  38.49064254760742
+# y_predict 결과 :  [[49.99999]]
+

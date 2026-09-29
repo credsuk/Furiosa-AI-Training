@@ -22,7 +22,8 @@ def split_x(dataset, size):
 bbb = split_x(a, size)
 
 print(bbb.shape) # (6, 5, 2)
-# x = bbb[:, :-1, :] # 모든 행에, 모든 것(:) 
+# 슬라이싱(Slicing) 연산자
+# x = bbb[:, :-1, :] # 모든 행에, 모든 것(:) / 배치사이즈, 타임스텝스, 특성
 x = bbb[:, :-1]
 # y = bbb[:, -1, 1] # 
 y = bbb[:, -1, -1]
