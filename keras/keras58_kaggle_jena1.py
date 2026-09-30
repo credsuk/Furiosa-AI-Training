@@ -120,19 +120,21 @@ print(x_train.shape, x_test.shape) # (315090, 144, 13) (105030, 144, 13)
 
 #2. 모델 구축
 model = Sequential()
-model.add(LSTM(20, input_shape=(144, 13)))
+model.add(LSTM(50, input_shape=(144, 13)))
+model.add(Dense(386, activation='relu'))
+model.add(Dropout(0.2))
 model.add(Dense(144))
 
 
 
 #3. 컴파일, 훈련
-learning_rate = 0.006
+learning_rate = 0.008
 model.compile(loss='mse', optimizer=Adam(learning_rate=learning_rate))
 
 rlr = ReduceLROnPlateau(
     monitor='val_loss',
     mode='min',
-    patience=60,
+    patience=50,
     verbose=1,
     factor=0.1 # 나누는 기준 기본값은 0.1
 )
@@ -140,7 +142,7 @@ rlr = ReduceLROnPlateau(
 es = EarlyStopping(
     monitor='val_loss',
     mode="min",
-    patience=20,
+    patience=100,
     restore_best_weights=True,
 )
 
@@ -167,7 +169,5 @@ print("y_predict : ", y_predict)
 
 
 # 자르는시간 :  1.56 초
-
-
-# 훈련 걸린시간 :  323.7 초
-# loss :  6762.5537109375
+# 훈련 걸린시간 :  249.5 초
+# loss :  6624.40234375
