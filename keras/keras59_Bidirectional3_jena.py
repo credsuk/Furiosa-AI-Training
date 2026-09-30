@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import time, datetime
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, LSTM, SimpleRNN, GRU, Dropout, MaxPooling2D, BatchNormalization, Flatten
+from tensorflow.keras.layers import Dense, LSTM, Bidirectional, GRU, Dropout, MaxPooling2D, BatchNormalization, Flatten
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import to_categorical
@@ -26,33 +26,6 @@ path = "./_data/kaggle_jena/"
 # 10분마다 있기 때문에 144개가 타임 스탭프
 # 원본데이터 12월 31일 데이터는 삭제 해야됨
 # T (degC)값을 y 하자
-
-"""
-# 너무 어렵게 생각 했나봄 (기억용)
-
-read_csv = pd.read_csv(path + "jena_climate_2009_2016.csv", ) 
-print(read_csv.shape) # (420551, 14)
-
-print(read_csv.columns)
-
-# 'Date Time' 열을 날짜/시간 타입으로 변환
-read_csv['Date Time'] = pd.to_datetime(read_csv['Date Time'], format='%d.%m.%Y %H:%M:%S')
-
-# 기준값(2016-12-31 00:00:00) 이하인 데이터만 남기기 (초과하는 모든 행 제거)
-current_date = pd.to_datetime('2016-12-31 00:00:00')
-read_csv = read_csv[read_csv['Date Time'] <= current_date]
-
-# Date Time 컬럼 삭제
-read_csv = read_csv.drop(['Date Time'], axis=1) 
-print(read_csv.shape) # (420407, 14)
-
-
-x_data = read_csv.drop(['wd (deg)'], axis=1)
-y_data = read_csv['wd (deg)'] # 예측치 정답 데이터
-
-print(x_data.shape, y_data.shape) # (420407, 13) (420407,)
-"""
-
 
 # 144 = 1일
 
@@ -120,9 +93,11 @@ print(x_train.shape, x_test.shape) # (315090, 144, 13) (105030, 144, 13)
 
 #2. 모델 구축
 model = Sequential()
-model.add(LSTM(36, input_shape=(144, 13), return_sequences=True))
+model.add(Bidirectional(LSTM(36, return_sequences=True), input_shape=(144, 13), ))
 model.add(GRU(48))
 model.add(Dense(286, activation='relu'))
+model.add(Dense(128, activation='relu'))
+model.add(Dense(62, activation='relu'))
 model.add(Dropout(0.2))
 model.add(Dense(144))
 
@@ -188,3 +163,4 @@ print("RMSE : ", rmse)
 # 훈련 걸린시간 :  1158.68 초
 # loss :  6.096022129058838
 # RMSE :  2.468988141513063
+
