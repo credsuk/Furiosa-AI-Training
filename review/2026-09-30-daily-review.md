@@ -1,85 +1,90 @@
 # 2026-09-30 AI 학습 일일 복습
 
 - 기준 저장소: `Furiosa-AI-Training`
-- 기준 브랜치: `main` (실행 시 확인된 로컬 `origin/main`: `c5ed6c0`)
-- 기준 날짜: 2026-09-30 (수요일, 평일)
-- 근거 학습 commit: `29f740b` (`day19`)
-- 주제: 시계열 window, 다중 feature shape, `return_sequences`, Jena 기후 데이터
+- 기준 브랜치: `main`
+- 대상 학습일: 2026-09-30 (수요일)
+- 기준 최신 SHA: `4b1aa938cb3b819da46be095c320992b87e1bf9d` (`day20`, 17:44 KST; 20시 cron 전에 반영됨)
+- 참고 학습 commit: `29f740b` (`day19`), `4b1aa93` (`day20`)
+- 주제: 시계열 window/shape, Bidirectional RNN, Jena 온도 예측, LangChain·LCEL
 - 문제 구성: 총 7문제 (객관식 4, 주관식 3)
 
 ## 복습 핵심
 
-- `split_x`의 window 개수는 `len(data) - size + 1`이다.
-- 입력 shape는 `(batch, timestep, feature)`이고 Keras `input_shape`에는 batch를 쓰지 않는다.
-- `[:, -1:]`처럼 슬라이스로 축을 보존하는 것과 `[:, -1]`로 축을 제거하는 것을 구별한다.
-- `return_sequences=True`는 다음 recurrent layer에 모든 timestep 출력을 전달할지 정하는 shape 설정이다.
-- 시계열 평가에서는 시간 순서를 보존하며, scaler는 train에만 `fit`하고 test에는 `transform`한다.
-- Python 함수의 변수명·import·반환값과 pandas DataFrame/Series/NumPy 변환도 함께 확인한다.
+- `split_x` window 개수는 `len(data) - size + 1`이고, `-1`과 `-1:`은 결과 축을 다르게 만든다.
+- 시계열 입력은 `(batch, timestep, feature)`이며 Keras `input_shape`에는 batch 축을 적지 않는다.
+- `Bidirectional`은 recurrent layer를 양방향으로 감싸며, 기본 concat에서는 두 방향의 units가 합쳐진다.
+- LCEL은 `prompt | model | output_parser`처럼 구성 요소를 연결한다.
+- 실제 코드의 target 열과 API 자격 증명 처리는 선언·주석만 믿지 말고, 학습과 예측 경로 및 안전한 비밀정보 처리를 각각 확인한다.
 
 ## 객관식
 
-### 1. Window 개수와 실제 shape
+### 1. Bidirectional 출력 shape
 
-`keras56_split3.py`의 `a = np.array(range(1, 101))`, `size = 6` 및 `range(len(dataset) - size + 1)`을 기준으로 `bbb = split_x(a, size)`의 shape는 무엇인가요? `bbb[:, :-1]`, `bbb[:, -1:]`의 shape도 함께 고르세요.
-
-- **A.** `bbb (94, 6)`, X `(94, 5)`, y `(94, 1)`
-- **B.** `bbb (95, 6)`, X `(95, 5)`, y `(95, 1)`
-- **C.** `bbb (95, 5)`, X `(95, 4)`, y `(95, 1)`
-- **D.** `bbb (100, 6)`, X `(100, 5)`, y `(100, 1)`
-
-선택한 이유와 파일의 주석 출력이 계산 결과와 맞는지도 적어 보세요.
-
-### 2. 다중 feature target indexing
-
-`bbb.shape == (45, 6, 2)`일 때 아래 코드의 결과 shape는 무엇인가요?
+`x.shape == (7, 3, 1)`일 때 아래 층을 기본 설정으로 사용하고 `return_sequences`를 지정하지 않으면 출력 shape는 무엇인가요?
 
 ```python
-y = bbb[:, -1:, 1]
+Bidirectional(SimpleRNN(16), input_shape=(3, 1))
 ```
 
-- **A.** `(45, 6, 2)`
-- **B.** `(45, 1, 2)`
-- **C.** `(45, 1)`
-- **D.** `(1, 45)`
+- **A.** `(7, 3, 16)`
+- **B.** `(7, 16)`
+- **C.** `(7, 32)`
+- **D.** `(7, 3, 32)`
 
-선택한 이유를 축별로 설명해 보세요.
+기본 merge 방식과 두 방향의 출력을 연결해 이유를 설명하세요.
 
-### 3. `return_sequences`의 목적
+### 2. Window와 NumPy shape
 
-여러 LSTM/GRU 층을 연결할 때 중간 recurrent 층에서 `return_sequences=True`를 설정하는 주된 이유는 무엇인가요?
+길이 100인 1차원 배열에서 `size=6`으로 다음 window 함수를 사용합니다.
 
-- **A.** 학습 데이터가 자동으로 섞이는 것을 막기 위해
-- **B.** 모든 timestep의 출력을 다음 recurrent 층에 전달하기 위해
-- **C.** 모델의 loss를 자동으로 낮추기 위해
-- **D.** 입력 feature 축을 제거하기 위해
+```python
+for i in range(len(data) - size + 1):
+    windows.append(data[i:i + size])
+```
 
-선택한 이유를 출력 tensor의 축과 연결해 설명해 보세요.
+`windows`, `x = windows[:, :-1]`, `y = windows[:, -1:]`의 shape 조합은 무엇인가요?
 
-### 4. 시계열 검증과 스케일링
+- **A.** `(94, 6)`, `(94, 5)`, `(94, 1)`
+- **B.** `(95, 6)`, `(95, 5)`, `(95, 1)`
+- **C.** `(95, 5)`, `(95, 4)`, `(95, 1)`
+- **D.** `(100, 6)`, `(100, 5)`, `(100, 1)`
 
-시간 순서가 중요한 데이터에 대한 설명으로 가장 적절한 것은 무엇인가요?
+### 3. pandas → NumPy 변환
 
-- **A.** train/test를 무작위로 섞고 scaler는 전체 데이터에 `fit`한다.
-- **B.** 시간 순서를 보존해 분할하고 scaler는 train에 `fit`, test에 `transform`한다.
-- **C.** test 데이터를 먼저 scaler에 `fit`하고 train에 `transform`한다.
-- **D.** `shuffle=False`이면 test 구간도 train 데이터로 사용해도 된다.
+Jena 예제에서 `datasets`가 `pd.read_csv(..., index_col=0)`의 결과이고 `T (degC)` 열을 제거한다고 할 때, 다음 표현의 역할로 맞는 것은 무엇인가요?
 
-선택한 이유와 데이터 누수 위험을 설명해 보세요.
+```python
+datasets.drop(['T (degC)'], axis=1).to_numpy(dtype=np.float32)
+```
+
+- **A.** 행을 제거하고 pandas Series를 반환한다.
+- **B.** 열을 제거하고 지정 dtype의 NumPy 배열을 반환한다.
+- **C.** 열을 제거하고 DataFrame의 index를 반환한다.
+- **D.** 결측치를 제거하고 Python list를 반환한다.
+
+### 4. LCEL 구성
+
+프롬프트에서 모델을 호출한 뒤 출력 문자열을 얻는 체인으로 가장 적절한 것은 무엇인가요?
+
+- **A.** `model | prompt | parser`
+- **B.** `prompt | model | StrOutputParser()`
+- **C.** `parser | prompt | model`
+- **D.** `prompt + model + parser`
 
 ## 주관식
 
-### 5. Python 함수 작성과 반환 shape
+### 5. Python 함수와 window 반환 shape
 
-NumPy를 사용해 1차원 `data`와 `timestep`을 입력받고, 각 X가 연속된 `timestep`개 값, 각 y가 바로 다음 한 값이 되도록 `split_xy(data, timestep)`을 작성하세요. 입력 길이가 `n`일 때 X와 y의 shape도 적고, 필요한 import와 반복 범위를 확인하세요.
+NumPy 배열 `data`와 정수 `timestep`을 받아 각 입력 window의 길이는 `timestep`, 정답은 바로 다음 값 한 개가 되도록 `split_xy(data, timestep)`을 작성하세요. `len(data) == n`일 때 X와 y의 shape를 적고, import·변수명·반복 범위도 확인하세요.
 
-### 6. pandas 처리 흐름 설명
+### 6. Helper 연결 오류 찾기
 
-Jena 예제에서 `pd.read_csv(path, index_col=0)`의 반환 객체는 무엇인가요? 이어서 `.drop(['wd (deg)'], axis=1).to_numpy(dtype=np.float32)`는 어떤 열을 제거하고 최종적으로 어떤 자료형의 데이터를 반환하는지 설명하세요. 이번 예제에서 확인한 실제 동작과 일반적인 pandas 참고 지식을 구분해 주세요.
+`RAG/_llm.py`에는 `setPrompt(...)` 함수가 정의되어 있습니다. `RAG/rag08_LCEL02.py`의 호출부가 다른 함수 이름을 사용한다면 실행 시 어떤 종류의 오류가 발생할 수 있나요? 호출을 어떻게 맞추면 되는지 답하고, `invoke`에서 prompt·model·parser가 어떤 순서로 연결되는지 설명하세요.
 
-### 7. 코드 검토: 입력 shape와 예측 누수
+### 7. 데이터 누수·입력 일관성·보안
 
-`keras56_split3.py`에서 `bbb`는 `(95, 6)`이고 `x = bbb[:, :-1]`의 shape는 `(95, 5)`입니다. 그런데 모델은 `input_shape=(5, 1)`로 선언되어 있습니다. 모델 입력에 필요한 shape와 현재 코드에서 빠진 변환을 설명하세요. 이어서 Jena 예제의 train/test 순서 보존 및 train-only scaler fit이 왜 필요한지, `evaluate(x, y)`를 학습 데이터 전체에 실행한 점수가 무엇을 검증하는지 설명하세요.
+`keras59_Bidirectional3_jena.py`에서 학습용 `x_data`는 `T (degC)`를 제거하지만 예측용 `x_predict`는 `wd (deg)`를 제거합니다. 어떤 입력 일관성 문제가 생길 수 있는지 설명하세요. 이어서 왜 시계열 train/test 분할에서 순서를 보존하는지, 코드에 API key를 직접 쓰거나 일부를 출력하는 방식 대신 어떤 안전한 처리 원칙을 써야 하는지 적어 보세요. 자격 증명 값은 답변에 쓰지 마세요.
 
 ## 답변 방법
 
-1~7번 번호를 붙여 답하세요. 객관식은 선택지와 이유를, 주관식은 코드·shape·설명을 포함해 주세요. 모르는 부분은 `모름`이라고 적어도 됩니다.
+1~7번 번호를 붙여 답하세요. 객관식은 선택지와 이유를, 주관식은 코드·shape·설명을 적어 주세요. 모르는 항목은 `모름`이라고 적어도 됩니다.
