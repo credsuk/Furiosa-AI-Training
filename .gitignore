@@ -224,3 +224,4 @@ _data/
 .idea/
 _save/
 .env
+_db/
