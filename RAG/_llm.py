@@ -1,11 +1,13 @@
 # 계속 쓰기 귀찮아 내가 만든 클래스
 import os
 from langchain_openai import ChatOpenAI
-from langchain_core.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter, TextSplitter, CharacterTextSplitter
 from langchain_chroma import Chroma
+from langchain_classic.chains.combine_documents import create_stuff_documents_chain
+from langchain_classic.chains import create_retrieval_chain
 
 from dotenv import load_dotenv # env파일을 읽어오는 플러그인
 load_dotenv() # env파일 불러오기
@@ -15,17 +17,20 @@ base_url = os.environ["MONOROUTER_BASE_URL"].strip()
 
 # ChatOpenAI Model 불러오기
 def getOpenAi():
-    return ChatOpenAI(
-    model_name='gpt-5.6-terra',
-    temperature=0, #
-    api_key= api_key,
-    base_url=base_url, # 보통 외부키는 이렇게 해야 연결 가능
-)
+        return ChatOpenAI(
+        model_name='gpt-6-luna',
+        temperature=0, # 0 : 있는 그대로  / 1 : 창의적으로
+        max_tokens=1000, # 토큰 제한 (기본값은 제한이 없음)
+        api_key= api_key,
+        base_url=base_url, # 보통 외부키는 이렇게 해야 연결 가능
+    )
 
 # PromptTemplate 불러오기
 def setPrompt(*, str=None, template=None):
     if template:
         return PromptTemplate.from_template(template=template)
+    elif template == ChatPromptTemplate:
+            return ChatPromptTemplate.from_template(str)
     elif str:
         return PromptTemplate.from_template(str)
     else:
@@ -53,6 +58,12 @@ def chroma_save(texts, *, persist_directory="./_db/Chroma/", collection_name="cr
         collection_name=collection_name, # 이름
     )
 
+def chroma_load(persist_directory="./_db/Chroma/", *, collection_name="croma"): 
+    return Chroma(
+        embedding_function=getEmbedding(),  # OpenAi Embedding
+        persist_directory=persist_directory, # 경로
+        collection_name=collection_name, # 이름
+    )
 
 def getEmbedding() :
     return OpenAIEmbeddings(
