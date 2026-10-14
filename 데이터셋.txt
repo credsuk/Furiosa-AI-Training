@@ -13,9 +13,12 @@
 10_digits
 
 ################ CNN ##################
-11 minist
-12 fashoin
-13 cifar10
-14 cifar100
+11_minist
+12_fashoin
+13_cifar10
+14_cifar100
 
-15 man_woman
+15_man_hores
+16_rps
+17_man_woman
+18_cat_dog
