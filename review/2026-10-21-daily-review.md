@@ -1,6 +1,6 @@
 # 2026-10-21 AI 일일 복습 문제
 
-대상 범위: `LG/lg07_ToolNode_graph01.py` ~ `LG/lg09_병렬실행_병합2.py`  
+대상 범위: `LG/lg07_ToolNode_graph01.py` ~ `LG/lg09_병렬실행_병합2.py`
 문제 수: 7문제 (객관식 4문제, 주관식 3문제)
 
 ## 객관식
