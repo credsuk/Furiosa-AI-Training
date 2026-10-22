@@ -46,7 +46,7 @@ class State(TypedDict) :
     messages : Annotated[list, add_messages]
     search_result : str
     analysis_result : str
-    
+
 
 
 
@@ -116,7 +116,7 @@ print("Assistant : ", response['messages'][-1].content)
 ###################### 그래프 이미지 ######################
 import matplotlib.pyplot as plt
 from PIL import Image
-from io import BytesIO
+from io import BytesIO 
 
 
 png_data = graph.get_graph().draw_mermaid_png()
