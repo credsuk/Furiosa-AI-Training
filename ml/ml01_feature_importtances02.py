@@ -1,4 +1,5 @@
 from sklearn.datasets import load_diabetes
+# 보통 뒤에 부분에  Classifier > 분류 / Regressor > 회기
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import GradientBoostingRegressor
