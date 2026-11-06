@@ -11,7 +11,7 @@ warnings.filterwarnings('ignore')
 
 
 #1. 데이터
-x, y = load_digits(return_X_y=True)
+x, y = load_iris(return_X_y=True)
 x_train, x_test, y_train, y_test = train_test_split(
     x, y, shuffle=True, random_state=21332, test_size=0.2
 )
